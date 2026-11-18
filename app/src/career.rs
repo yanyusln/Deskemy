@@ -55,9 +55,9 @@ pub fn pickable<'a>(library: &'a [CourseSummary], in_track: &HashSet<&str>, quer
         .collect()
 }
 
-/// "1 course", "3 courses".
+/// "1 门课程", "3 门课程".
 pub fn count(n: i64, word: &str) -> String {
-    format!("{n} {word}{}", if n == 1 { "" } else { "s" })
+    format!("{n} {word}")
 }
 
 /// A blank description is no description.
@@ -98,8 +98,8 @@ impl TracksPage {
                     name: t.name.into(),
                     description: t.description.unwrap_or_default().into(),
                     meta: format!(
-                        "{} · {} / {} lectures",
-                        count(t.course_count, "course"),
+                        "{} · {} / {} 个课时",
+                        count(t.course_count, "门课程"),
                         t.completed_lectures,
                         t.total_lectures
                     )
@@ -144,10 +144,10 @@ impl TracksPage {
         nav.set_crumb_targets(model(vec!["tracks".into(), "".into()]));
         let Some(t) = detail else {
             page.set_found(false);
-            nav.set_crumbs(model(vec!["Career Tracks".into(), "Track".into()]));
+            nav.set_crumbs(model(vec!["职业路线".into(), "路线".into()]));
             return;
         };
-        nav.set_crumbs(model(vec!["Career Tracks".into(), t.name.clone().into()]));
+        nav.set_crumbs(model(vec!["职业路线".into(), t.name.clone().into()]));
 
         let done: i64 = t.courses.iter().map(|c| c.completed_lectures).sum();
         let total: i64 = t.courses.iter().map(|c| c.lecture_count).sum();
@@ -158,8 +158,8 @@ impl TracksPage {
         page.set_name(t.name.clone().into());
         page.set_description(t.description.clone().unwrap_or_default().into());
         page.set_percent(percent);
-        page.set_summary(format!("{percent}% · {done} / {total} lectures").into());
-        page.set_count_label(count(t.courses.len() as i64, "course").to_uppercase().into());
+        page.set_summary(format!("{percent}% · {done} / {total} 个课时").into());
+        page.set_count_label(count(t.courses.len() as i64, "门课程").into());
         page.set_courses(model(
             t.courses
                 .iter()
@@ -204,7 +204,7 @@ impl TracksPage {
         ui.global::<Tracks>().set_dialog("".into());
         let nav = ui.global::<Nav>();
         nav.set_page("tracks".into());
-        nav.set_crumbs(model(vec!["Career Tracks".into()]));
+        nav.set_crumbs(model(vec!["职业路线".into()]));
         nav.set_crumb_targets(model(vec!["".into()]));
         self.show_list(ui);
     }
@@ -219,7 +219,7 @@ impl TracksPage {
             .map(|c| PickRow {
                 id: c.id.clone().into(),
                 title: c.title.clone().into(),
-                lectures: count(c.lecture_count, "lecture").into(),
+                lectures: count(c.lecture_count, "个课时").into(),
                 thumbnail: self.library.image(c.thumbnail_path.as_deref()),
                 has_thumbnail: c.thumbnail_path.is_some(),
             })
@@ -228,9 +228,9 @@ impl TracksPage {
         tracks.set_pickable(model(rows));
         tracks.set_pick_empty(
             if courses.is_empty() {
-                "No courses in your library yet."
+                "课程库中还没有课程。"
             } else {
-                "Every matching course is already in this track."
+                "所有匹配的课程都已在这条路线中。"
             }
             .into(),
         );
@@ -329,8 +329,8 @@ mod tests {
 
     #[test]
     fn counts_read_naturally() {
-        assert_eq!(count(1, "course"), "1 course");
-        assert_eq!(count(0, "course"), "0 courses");
-        assert_eq!(count(12, "lecture"), "12 lectures");
+        assert_eq!(count(1, "门课程"), "1 门课程");
+        assert_eq!(count(0, "门课程"), "0 门课程");
+        assert_eq!(count(12, "个课时"), "12 个课时");
     }
 }

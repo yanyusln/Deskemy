@@ -261,14 +261,26 @@ impl Importer {
     ) -> Result<String> {
         if plan.lecture_count() == 0 {
             return Err(DeskemyError::Import(format!(
-                "no playable video files found in {}",
+                "在 {} 中未找到可播放的视频文件",
                 snap.folder_path
             )));
         }
         let sections = &plan.sections;
         let scan = &plan.scan;
 
-        let thumbnail = detect_thumbnail(scan);
+        // The detected cover lives in the course's own folder and can be a
+        // huge poster; cache a downscaled copy so the library never decodes
+        // the original (a 11300x6500 JPEG stalls scrolling for seconds).
+        let thumbnail = detect_thumbnail(scan).and_then(|p| {
+            crate::paths::data_dir().and_then(|dir| {
+                let thumbs = dir.join(crate::courses::THUMBNAILS_DIR);
+                match crate::thumbnails::cache_cover(Path::new(&p), &thumbs, crate::thumbnails::COVER_MAX_WIDTH) {
+                    Ok(Some(stored)) => Some(stored.to_string_lossy().into_owned()),
+                    // No ffmpeg, small image, encode failure: keep the original.
+                    _ => Some(p),
+                }
+            })
+        });
 
         let tx = conn.transaction()?;
         // Replace any previous import of the same folder. Re-read inside the tx:

@@ -136,8 +136,7 @@ pub fn resources_summary(attachments: &[Attachment]) -> String {
         return String::new();
     }
     let done = attachments.iter().filter(|a| a.completed).count();
-    let word = if attachments.len() == 1 { "resource" } else { "resources" };
-    format!("{done} / {} {word} done", attachments.len())
+    format!("{done} / {} 个资源已完成", attachments.len())
 }
 
 /// A resource as a curriculum / Resources row.
@@ -164,7 +163,7 @@ pub fn resource_groups<'a>(c: &CourseDetail, attachments: &'a [Attachment]) -> V
         .collect();
     let loose: Vec<&Attachment> = attachments.iter().filter(|a| a.section_id.is_none()).collect();
     if !loose.is_empty() {
-        groups.push(("Course-wide".into(), loose));
+        groups.push(("全课程".into(), loose));
     }
     groups
 }
@@ -183,11 +182,11 @@ pub fn shown_with<'a>(c: &'a CourseDetail, attachments: &[Attachment], id: &str,
 
 /// The pairing dialog's line on where a resource is now.
 pub fn pair_where(paired: bool, lecture: Option<&Lecture>) -> String {
-    let with = lecture.map_or_else(|| "no lecture".to_string(), |l| format!("“{}”", l.title));
-    if paired {
-        format!("Paired by you with {with}.")
-    } else {
-        format!("Placed automatically with {with}.")
+    match (paired, lecture) {
+        (true, Some(l)) => format!("已手动与“{}”配对。", l.title),
+        (true, None) => "已手动设为不关联课时。".into(),
+        (false, Some(l)) => format!("已自动归入“{}”。", l.title),
+        (false, None) => "未关联课时。".into(),
     }
 }
 
@@ -293,11 +292,11 @@ impl CoursePage {
         });
         *self.expanded.borrow_mut() = open.into_iter().collect();
 
-        let title = detail.as_ref().map_or_else(|| "Course".into(), |c| c.title.clone());
+        let title = detail.as_ref().map_or_else(|| "课程".into(), |c| c.title.clone());
         ui.global::<Course>().set_scroll_y(0.0);
         let nav = ui.global::<Nav>();
         nav.set_page("course".into());
-        nav.set_crumbs(model(vec!["Library".into(), title.into()]));
+        nav.set_crumbs(model(vec!["课程库".into(), title.into()]));
         nav.set_crumb_targets(model(vec!["library".into(), "".into()]));
         self.render(ui, detail);
     }
@@ -336,9 +335,9 @@ impl CoursePage {
         page.set_done(done as i32);
         page.set_total(lectures.len() as i32);
         page.set_percent(pct(done, lectures.len() as i64));
-        page.set_duration(c.total_duration.map(|d| format!("{} total", format_duration(Some(d)))).unwrap_or_default().into());
+        page.set_duration(c.total_duration.map(|d| format!("共 {}", format_duration(Some(d)))).unwrap_or_default().into());
         page.set_next(next.clone().unwrap_or_default().into());
-        page.set_next_label(if done > 0 { "Resume Lecture" } else { "Start Course" }.into());
+        page.set_next_label(if done > 0 { "继续学习" } else { "开始课程" }.into());
         page.set_resources_summary(resources_summary(&attachments).into());
         let inline = settings::lock(&self.config).resources_inline;
         let (by_lecture, by_section) =
@@ -445,8 +444,8 @@ impl CoursePage {
     pub fn pick_cover(&self, ui: &AppWindow) {
         let file = match dialogs::pick("cover", || {
             rfd::FileDialog::new()
-                .set_title("Choose a course cover")
-                .add_filter("Images", &["png", "jpg", "jpeg", "webp", "gif", "bmp"])
+                .set_title("选择课程封面")
+                .add_filter("图片", &["png", "jpg", "jpeg", "webp", "gif", "bmp"])
                 .set_parent(&ui.window().window_handle())
                 .pick_file()
         }) {
@@ -479,8 +478,8 @@ impl CoursePage {
     }
 
     fn store_cover(&self, bytes: &[u8], ext: Option<&str>) -> Result<String, String> {
-        let id = self.id().ok_or("no course is open")?;
-        let dir = self.thumbs_dir.as_ref().ok_or("no data directory to store covers in")?;
+        let id = self.id().ok_or("没有打开的课程")?;
+        let dir = self.thumbs_dir.as_ref().ok_or("没有可存储封面的数据目录")?;
         courses::set_cover(&self.conn(), dir, &id, bytes, ext).map_err(|e| e.to_string())
     }
 
@@ -501,7 +500,7 @@ impl CoursePage {
         let Some(id) = self.id() else { return };
         let folder = match dialogs::pick("locate folder", || {
             rfd::FileDialog::new()
-                .set_title("Where is this course now?")
+                .set_title("课程现在在哪里？")
                 .set_parent(&ui.window().window_handle())
                 .pick_folder()
         }) {
@@ -615,9 +614,9 @@ impl CoursePage {
                 let message = match e {
                     // Rescanned while the dialog was open: new ids.
                     deskemy_core::error::DeskemyError::NotFound(_) => {
-                        "The course changed on disk meanwhile. Close this and try again.".to_string()
+                        "课程在磁盘上发生了变动。请关闭后重试。".to_string()
                     }
-                    e => format!("Couldn't pair it: {e}"),
+                    e => format!("配对失败：{e}"),
                 };
                 page.set_pair_error(message.into());
             }
@@ -643,7 +642,7 @@ impl CoursePage {
 fn clipboard_png() -> Result<Vec<u8>, String> {
     let image = arboard::Clipboard::new()
         .and_then(|mut clipboard| clipboard.get_image())
-        .map_err(|_| "There's no image on the clipboard.".to_string())?;
+        .map_err(|_| "剪贴板中没有图片。".to_string())?;
     let mut png = Vec::new();
     let mut encoder = png::Encoder::new(&mut png, image.width as u32, image.height as u32);
     encoder.set_color(png::ColorType::Rgba);
@@ -731,8 +730,8 @@ mod tests {
         // Where the dialog says it is, with and without "keep together".
         assert_eq!(shown_with(&c, &atts, "005 Notes.pdf", true).map(|l| l.id.as_str()), Some("l4"));
         assert!(shown_with(&c, &atts, "005 Notes.pdf", false).is_none());
-        assert_eq!(pair_where(false, shown_with(&c, &atts, "005 Notes.pdf", true)), "Placed automatically with “l4”.");
-        assert_eq!(pair_where(true, None), "Paired by you with no lecture.");
+        assert_eq!(pair_where(false, shown_with(&c, &atts, "005 Notes.pdf", true)), "已自动归入“l4”。");
+        assert_eq!(pair_where(true, None), "已手动设为不关联课时。");
     }
 
     #[test]
@@ -758,7 +757,7 @@ mod tests {
                 lecture("c", false, true, None),
             ],
         };
-        assert_eq!(section_meta(&s), "1/3 · 1h 5m");
+        assert_eq!(section_meta(&s), "1/3 · 1 小时 5 分钟");
         let unknown = Section { lectures: vec![lecture("x", false, true, None)], ..s };
         assert_eq!(section_meta(&unknown), "0/1");
     }
@@ -830,8 +829,8 @@ mod tests {
         assert_eq!(names(by_section.get("s1")), Some(vec!["notes.pdf".to_string()]));
         // Course-wide ones stay out of the curriculum.
         assert_eq!(by_lecture.values().chain(by_section.values()).map(Vec::len).sum::<usize>(), 3);
-        assert_eq!(resources_summary(&atts), "1 / 4 resources done");
-        assert_eq!(resources_summary(&atts[..1]), "1 / 1 resource done");
+        assert_eq!(resources_summary(&atts), "1 / 4 个资源已完成");
+        assert_eq!(resources_summary(&atts[..1]), "1 / 1 个资源已完成");
         assert_eq!(resources_summary(&[]), "");
     }
 
@@ -858,7 +857,7 @@ mod tests {
             vec![
                 ("s1".into(), vec!["one.pdf"]),
                 ("s2".into(), vec!["two.pdf"]),
-                ("Course-wide".into(), vec!["loose.pdf"]),
+                ("全课程".into(), vec!["loose.pdf"]),
             ]
         );
     }

@@ -53,7 +53,7 @@ export global Library {
     in property <[string]> tags;
     /// "All tracks" followed by each career track.
     in property <[SelectOption]> track-options;
-    in property <string> track-label: "All tracks";
+    in property <string> track-label: "全部路线";
     in property <string> status-text;
 
     in-out property <string> query;
@@ -264,7 +264,7 @@ component CourseCardView inherits Rectangle {
             if root.course.finished: Badge {
                 x: 8px;
                 y: 8px;
-                text: "Completed";
+                text: "已完成";
                 icon: @image-url("icons/check-check.svg");
                 tint: Theme.secondary-container;
                 fill: Theme.secondary-container.transparentize(0.8);
@@ -272,7 +272,7 @@ component CourseCardView inherits Rectangle {
             if !root.course.finished && root.broken: Badge {
                 x: 8px;
                 y: 8px;
-                text: root.course.status;
+                text: root.course.status == "Missing" ? "缺失" : "错误";
                 icon: @image-url("icons/triangle-alert.svg");
                 tint: Theme.error;
                 fill: Theme.error.transparentize(0.8);
@@ -280,7 +280,7 @@ component CourseCardView inherits Rectangle {
             if !root.course.finished && !root.broken && root.busy: Badge {
                 x: 8px;
                 y: 8px;
-                text: root.course.status;
+                text: root.course.status == "Scanning" ? "扫描中" : "导入中";
                 icon: @image-url("icons/loader-circle.svg");
                 tint: Theme.on-surface;
                 fill: #00000099;
@@ -329,21 +329,27 @@ component CourseCardView inherits Rectangle {
             padding: 12px;
             spacing: 8px;
             vertical-stretch: 1;
+            alignment: start;
+
+            // Title: two lines at most, like the Tauri card's line-clamp-2.
+            // `overflow: clip` rather than `elide`: with wrap, elide misplaces
+            // the whole block once the text is taller than the box (the first
+            // line is cut off and the rest drifts up over the thumbnail).
+            // `min-width: 0` lets a long unbroken name wrap instead of
+            // widening the card.
             Text {
                 text: root.course.title;
                 color: Theme.on-surface;
                 font-size: Theme.headline-sm;
                 font-weight: 600;
-                // Two lines at most, like the Tauri card's line-clamp-2.
                 wrap: word-wrap;
-                // A long unbroken name (underscores, no spaces) breaks anywhere
-                // instead of widening the layout past its card.
-                min-width: 0px;
-                overflow: elide;
+                overflow: clip;
                 height: 40px;
+                min-width: 0px;
                 vertical-alignment: top;
             }
             Rectangle { vertical-stretch: 1; }
+
             HorizontalLayout {
                 spacing: 4px;
                 Image {
@@ -354,13 +360,13 @@ component CourseCardView inherits Rectangle {
                     colorize: Theme.on-surface-variant;
                 }
                 Text {
-                    text: root.course.lectures + " Lectures";
+                    text: root.course.lectures + " 个课时";
                     color: Theme.on-surface-variant;
                     font-size: Theme.label-sm;
                     horizontal-stretch: 1;
                 }
                 Text {
-                    text: root.course.finished ? "100%" : root.course.started ? root.course.percent + "%" : "Not started";
+                    text: root.course.finished ? "100%" : root.course.started ? root.course.percent + "%" : "未开始";
                     color: root.course.started || root.course.finished ? Theme.on-surface-variant : Theme.outline;
                     font-size: Theme.label-sm;
                 }
@@ -379,22 +385,53 @@ component CourseCardView inherits Rectangle {
 export component CourseGrid inherits Rectangle {
     in property <[CourseCard]> cards;
     in property <length> grid-width;
+    /// The outer Flickable's viewport, in window coordinates. A ListView here
+    /// would fill its whole content height and virtualize nothing, so derive
+    /// the visible rows from the page's scroll position instead.
+    in property <length> viewport-y;
+    in property <length> viewport-height;
     callback open(string);
 
     property <int> columns: root.grid-width >= 1000px ? 4 : root.grid-width >= 740px ? 3 : root.grid-width >= 480px ? 2 : 1;
     property <length> gap: 20px;
     property <length> card-width: (root.grid-width - (root.columns - 1) * root.gap) / root.columns;
     property <length> card-height: root.card-width * 9 / 16 + 96px;
+    property <length> row-pitch: root.card-height + root.gap;
+    property <int> rows: ceil(root.cards.length / root.columns);
+    // How far the grid's top sits above the viewport's top edge (negative
+    // while the hero and filters above the grid are still on screen).
+    property <length> grid-top: root.viewport-y - root.absolute-position.y;
+    // The rows intersecting the viewport. The viewport's top edge in grid
+    // coordinates clamps at the grid's own top; its bottom edge is always
+    // `grid-top + viewport-height`, whether or not the grid's top has already
+    // scrolled out of view — subtracting grid-top here instead shrank the
+    // window to a single row once the grid top left the viewport.
+    property <int> first-row: min(root.rows - 1, max(0, floor(max(0px, root.grid-top) / root.row-pitch)));
+    property <int> last-row: max(root.first-row, min(root.rows - 1, floor((root.grid-top + root.viewport-height) / root.row-pitch)));
 
-    height: ceil(root.cards.length / root.columns) * (root.card-height + root.gap) - root.gap;
+    height: root.rows * root.row-pitch - root.gap;
 
-    for card[i] in root.cards: CourseCardView {
-        x: mod(i, root.columns) * (root.card-width + root.gap);
-        y: floor(i / root.columns) * (root.card-height + root.gap);
-        width: root.card-width;
+    // Only the rows on screen exist, so a long library costs no more to scroll
+    // than a short one.
+    for offset in root.last-row - root.first-row + 1: row-cell := Rectangle {
+        property <int> row-index: root.first-row + offset;
+        y: self.row-index * root.row-pitch;
+        width: root.grid-width;
         height: root.card-height;
-        course: card;
-        clicked => { root.open(card.id); }
+
+        for column in root.columns: cell := Rectangle {
+            property <int> card-index: row-cell.row-index * root.columns + column;
+            x: column * (root.card-width + root.gap);
+            width: root.card-width;
+            height: root.card-height;
+
+            if cell.card-index < root.cards.length: CourseCardView {
+                width: parent.width;
+                height: parent.height;
+                course: root.cards[cell.card-index];
+                clicked => { root.open(root.cards[cell.card-index].id); }
+            }
+        }
     }
 }
 
@@ -437,7 +474,7 @@ export component LibraryPage inherits Flickable {
                 }
             }
             Text {
-                text: "Your library is empty";
+                text: "课程库还是空的";
                 color: Theme.on-surface;
                 font-size: Theme.headline-md;
                 font-weight: 600;
@@ -445,7 +482,7 @@ export component LibraryPage inherits Flickable {
             }
             Text {
                 text: Library.status-text != "" ? Library.status-text
-                    : "Use Add Folder in the sidebar to import a downloaded course. Deskemy will auto-structure it into sections and lectures.";
+                    : "点击侧边栏的“添加文件夹”导入已下载的课程，Deskemy 会自动整理出章节与课时。";
                 color: Theme.on-surface-variant;
                 font-size: Theme.body-sm;
                 horizontal-alignment: center;
@@ -457,7 +494,7 @@ export component LibraryPage inherits Flickable {
         if Library.total > 0 && Library.hero.visible: VerticalLayout {
             spacing: 16px;
             Text {
-                text: "Continue Watching";
+                text: "继续观看";
                 color: Theme.on-surface;
                 font-size: Theme.headline-sm;
                 font-weight: 600;
@@ -470,7 +507,7 @@ export component LibraryPage inherits Flickable {
                 background: Theme.surface-container-low;
                 clip: true;
                 accessible-role: button;
-                accessible-label: "Continue " + Library.hero.lecture;
+                accessible-label: "继续播放 " + Library.hero.lecture;
 
                 HorizontalLayout {
                     // A third image, two thirds text. A width, not stretch:
@@ -507,34 +544,37 @@ export component LibraryPage inherits Flickable {
                             font-size: Theme.label-sm;
                             overflow: elide;
                         }
+                        // Two 29px lines: the box stays a whole number of lines,
+                        // so a third one is cut off cleanly (see the card title
+                        // on why this is `clip` and not `elide`).
                         Text {
                             text: Library.hero.lecture;
                             color: Theme.on-surface;
                             font-size: Theme.display-sm;
                             font-weight: 700;
                             wrap: word-wrap;
-                            // A long unbroken name (underscores, no spaces) breaks anywhere
-                            // instead of widening the layout past its card.
+                            overflow: clip;
+                            height: 58px;
+                            // A long unbroken name breaks anywhere rather than
+                            // widening the hero past its picture.
                             min-width: 0px;
-                            overflow: elide;
-                            max-height: 64px;
                         }
                         if Library.hero.resuming: Text {
-                            text: "Continue where you left off";
+                            text: "从上次停下的地方继续";
                             color: Theme.primary;
                             font-size: Theme.label-sm;
                         }
                         Rectangle { vertical-stretch: 1; }
                         HorizontalLayout {
                             Text {
-                                text: Library.hero.percent + "% Complete";
+                                text: Library.hero.percent + "% 已完成";
                                 color: Theme.on-surface;
                                 font-size: Theme.label-md;
                                 font-weight: 600;
                                 horizontal-stretch: 1;
                             }
                             Text {
-                                text: Library.hero.completed + " / " + Library.hero.lectures + " lectures";
+                                text: Library.hero.completed + " / " + Library.hero.lectures + " 个课时";
                                 color: Theme.on-surface-variant;
                                 font-size: Theme.label-sm;
                             }
@@ -558,7 +598,7 @@ export component LibraryPage inherits Flickable {
             HorizontalLayout {
                 spacing: 12px;
                 Text {
-                    text: "All Courses";
+                    text: "全部课程";
                     color: Theme.on-surface;
                     font-size: Theme.headline-sm;
                     font-weight: 600;
@@ -587,7 +627,7 @@ export component LibraryPage inherits Flickable {
                     if query.text == "": Text {
                         x: 12px;
                         height: parent.height;
-                        text: "Search courses…";
+                        text: "搜索课程…";
                         color: Theme.on-surface-variant;
                         font-size: Theme.body-sm;
                         vertical-alignment: center;
@@ -609,15 +649,15 @@ export component LibraryPage inherits Flickable {
                 }
                 Select {
                     options: [
-                        { value: "recent", label: "Recent" },
-                        { value: "alpha", label: "Alphabetical" },
-                        { value: "progress", label: "Progress" },
-                        { value: "duration", label: "Longest" },
+                        { value: "recent", label: "最近" },
+                        { value: "alpha", label: "按名称" },
+                        { value: "progress", label: "进度" },
+                        { value: "duration", label: "最长" },
                     ];
                     value <=> Library.sort;
-                    label: Library.sort == "alpha" ? "Alphabetical"
-                        : Library.sort == "progress" ? "Progress"
-                        : Library.sort == "duration" ? "Longest" : "Recent";
+                    label: Library.sort == "alpha" ? "按名称"
+                        : Library.sort == "progress" ? "进度"
+                        : Library.sort == "duration" ? "最长" : "最近";
                     changed => { Library.apply(); }
                 }
             }
@@ -630,12 +670,12 @@ export component LibraryPage inherits Flickable {
             FlexboxLayout {
                 spacing: 8px;
                 for option in [
-                    { value: "all", label: "All" },
-                    { value: "recent", label: "Recently watched" },
-                    { value: "progress", label: "In progress" },
-                    { value: "finished", label: "Finished" },
-                    { value: "new", label: "Not started" },
-                    { value: "favorites", label: "Favorites" },
+                    { value: "all", label: "全部" },
+                    { value: "recent", label: "最近观看" },
+                    { value: "progress", label: "进行中" },
+                    { value: "finished", label: "已完成" },
+                    { value: "new", label: "未开始" },
+                    { value: "favorites", label: "收藏" },
                 ]: Pill {
                     text: option.label;
                     selected: Library.status == option.value;
@@ -658,7 +698,7 @@ export component LibraryPage inherits Flickable {
             }
 
             if Library.cards.length == 0: Text {
-                text: "No courses match your filters.";
+                text: "没有符合筛选条件的课程。";
                 color: Theme.on-surface-variant;
                 font-size: Theme.body-sm;
                 horizontal-alignment: center;
@@ -668,6 +708,8 @@ export component LibraryPage inherits Flickable {
             if Library.cards.length > 0: CourseGrid {
                 cards: Library.cards;
                 grid-width: root.page-width;
+                viewport-y: root.absolute-position.y;
+                viewport-height: root.height;
                 open(id) => { Library.show-course(id); }
             }
         }

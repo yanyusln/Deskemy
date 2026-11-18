@@ -13,7 +13,7 @@ use slint::{ComponentHandle, Model};
 const LIMIT: i64 = 50;
 
 /// The groups title hits show in, in this order: what each kind is called.
-const GROUPS: [(&str, &str); 4] = [("course", "Courses"), ("section", "Sections"), ("lecture", "Lectures"), ("attachment", "Resources")];
+const GROUPS: [(&str, &str); 4] = [("course", "课程"), ("section", "章节"), ("lecture", "课时"), ("attachment", "资源")];
 
 /// Around matched words in subtitle snippets: characters subtitles don't use.
 const OPEN: &str = "\u{2}";
@@ -186,8 +186,8 @@ mod tests {
 
     #[test]
     fn headings_count_and_say_when_there_may_be_more() {
-        assert_eq!(heading("Lectures", 12), "LECTURES · 12");
-        assert_eq!(heading("Resources", LIMIT as usize), "RESOURCES · 50+");
+        assert_eq!(heading("课时", 12), "课时 · 12");
+        assert_eq!(heading("资源", LIMIT as usize), "资源 · 50+");
     }
 
     #[test]

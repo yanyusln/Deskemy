@@ -17,6 +17,16 @@
     <a href="https://github.com/NFRohan/Deskemy/releases/latest"><img alt="Download for Windows" src="https://img.shields.io/badge/Download%20for%20Windows-8e10db?style=for-the-badge&logo=windows&logoColor=white" /></a>
     <a href="https://github.com/NFRohan/Deskemy/releases/latest"><img alt="Download for Linux (beta)" src="https://img.shields.io/badge/Download%20for%20Linux%20(beta)-8e10db?style=for-the-badge&logo=linux&logoColor=white" /></a>
   </p>
+
+  <p>
+    <sub>
+      Originally created by
+      <a href="https://github.com/NFRohan"><strong>Nayeem Fardin</strong></a>
+      (a.k.a. Spooksy) ·
+      <a href="https://github.com/NFRohan/Deskemy">github.com/NFRohan/Deskemy</a> ·
+      Current version <strong>2.1.2</strong>
+    </sub>
+  </p>
 </div>
 
 ---

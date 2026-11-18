@@ -73,17 +73,17 @@ pub fn pct(done: i64, total: i64) -> i32 {
     }
 }
 
-/// "3h 12m" / "45m" / "30s" / "—", as the Tauri app's `formatDuration`.
+/// "3 小时 12 分钟" / "45 分钟" / "30 秒" / "—", as the Tauri app's `formatDuration`.
 pub fn format_duration(seconds: Option<f64>) -> String {
     let Some(s) = seconds.filter(|s| *s > 0.0) else { return "—".into() };
     let s = s.floor() as i64;
     let (h, m) = (s / 3600, (s % 3600) / 60);
     if h > 0 {
-        format!("{h}h {m}m")
+        format!("{h} 小时 {m} 分钟")
     } else if m > 0 {
-        format!("{m}m")
+        format!("{m} 分钟")
     } else {
-        format!("{s}s")
+        format!("{s} 秒")
     }
 }
 
@@ -183,7 +183,7 @@ impl LibraryPage {
         let lib = ui.global::<Library>();
         lib.set_tags(model(all_tags(&courses).into_iter().map(Into::into).collect()));
         let tracks: Vec<(String, String)> = tracks.into_iter().map(|t| (t.id, t.name)).collect();
-        let options = std::iter::once((String::new(), "All tracks".to_string()))
+        let options = std::iter::once((String::new(), "全部路线".to_string()))
             .chain(tracks.iter().cloned())
             .map(|(value, label)| SelectOption { value: value.into(), label: label.into() })
             .collect();
@@ -204,7 +204,7 @@ impl LibraryPage {
             .iter()
             .find(|(id, _)| id.as_str() == track.as_str())
             .map(|(_, name)| name.clone());
-        lib.set_track_label(track_name.unwrap_or_else(|| "All tracks".into()).into());
+        lib.set_track_label(track_name.unwrap_or_else(|| "全部路线".into()).into());
         let filters = Filters {
             query: lib.get_query().to_string(),
             sort: Sort::parse(&lib.get_sort()),
@@ -235,6 +235,10 @@ impl LibraryPage {
             None => Hero::default(),
         });
 
+        // Every card carries its cover from the start: `Image::load_from_path`
+        // is synchronous on the UI thread, so decoding one as its card scrolls
+        // into view showed up as a hitch. The map caches by path, so later
+        // reloads only clone.
         let cards: Vec<CourseCard> =
             filter(&courses, &filters, now).into_iter().map(|c| self.card(c)).collect();
         lib.set_cards(model(cards));
@@ -346,9 +350,9 @@ mod tests {
 
     #[test]
     fn formats_like_the_tauri_app() {
-        assert_eq!(format_duration(Some(3.0 * 3600.0 + 12.0 * 60.0)), "3h 12m");
-        assert_eq!(format_duration(Some(45.0 * 60.0 + 30.0)), "45m");
-        assert_eq!(format_duration(Some(30.0)), "30s");
+        assert_eq!(format_duration(Some(3.0 * 3600.0 + 12.0 * 60.0)), "3 小时 12 分钟");
+        assert_eq!(format_duration(Some(45.0 * 60.0 + 30.0)), "45 分钟");
+        assert_eq!(format_duration(Some(30.0)), "30 秒");
         assert_eq!(format_duration(None), "—");
         assert_eq!(pct(1, 3), 33);
         assert_eq!(pct(2, 3), 67);

@@ -94,10 +94,10 @@ component UpdateButton inherits Rectangle {
             transform-rotation: root.busy ? animation-tick() / 1s * 360deg : 0deg;
         }
         label := Text {
-            text: Updates.status == "checking" ? "Checking…"
-                : Updates.status == "downloading" ? "Downloading " + Updates.progress + "%"
-                : Updates.status == "restarting" ? "Restarting…"
-                : root.offer ? "Update to " + Updates.version : "Check";
+            text: Updates.status == "checking" ? "检查中…"
+                : Updates.status == "downloading" ? "正在下载 " + Updates.progress + "%"
+                : Updates.status == "restarting" ? "正在重启…"
+                : root.offer ? "更新到 " + Updates.version : "检查";
             color: root.offer ? Theme.on-primary-container : Theme.on-surface;
             font-size: Theme.label-md;
             font-weight: 600;
@@ -287,7 +287,7 @@ export component SettingsPage inherits Flickable {
                 colorize: Theme.on-surface;
             }
             Text {
-                text: "Settings";
+                text: "设置";
                 color: Theme.on-surface;
                 font-size: Theme.headline-sm;
                 font-weight: 600;
@@ -297,13 +297,13 @@ export component SettingsPage inherits Flickable {
 
         VerticalLayout {
             spacing: 12px;
-            Heading { text: "APPEARANCE"; }
+            Heading { text: "外观"; }
             Group {
                 height: appearance.preferred-height;
                 appearance := VerticalLayout {
                     Row {
-                        title: "Theme";
-                        description: "Follow the system or force light/dark.";
+                        title: "主题";
+                        description: "跟随系统，或强制使用浅色/深色。";
                         text-width: root.text-width;
                         Select {
                             options: Prefs.themes;
@@ -318,13 +318,13 @@ export component SettingsPage inherits Flickable {
 
         VerticalLayout {
             spacing: 12px;
-            Heading { text: "PLAYBACK"; }
+            Heading { text: "播放"; }
             Group {
                 height: playback.preferred-height;
                 playback := VerticalLayout {
                     Row {
-                        title: "Default playback speed";
-                        description: "Applied when a lecture opens.";
+                        title: "默认播放速度";
+                        description: "打开课时时应用。";
                         text-width: root.text-width;
                         Select {
                             options: Prefs.speeds;
@@ -335,41 +335,41 @@ export component SettingsPage inherits Flickable {
                     }
                     Divider { }
                     Row {
-                        title: "Autoplay next lecture";
-                        description: "Advance automatically when one ends.";
+                        title: "自动播放下一课时";
+                        description: "课时结束后自动切换。";
                         text-width: root.text-width;
                         Switch {
-                            label: "Autoplay next lecture";
+                            label: "自动播放下一课时";
                             checked: Prefs.autoplay;
                             toggled => { Prefs.set("autoplay", Prefs.autoplay ? "false" : "true"); }
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Auto-hide controls in fullscreen";
-                        description: "Hide the controls and cursor after a few seconds without mouse movement while fullscreen (VLC-style). Off keeps them visible in fullscreen; in a window they always tuck away, as they sit over the video.";
+                        title: "全屏时自动隐藏控件";
+                        description: "全屏且鼠标静止几秒后隐藏控件和光标（类似 VLC）。关闭后全屏时保持可见；窗口模式下控件始终会自动收起，因为它们覆盖在视频上。";
                         text-width: root.text-width;
                         Switch {
-                            label: "Auto-hide controls in fullscreen";
+                            label: "全屏时自动隐藏控件";
                             checked: Prefs.autohide;
                             toggled => { Prefs.set("autohide", Prefs.autohide ? "false" : "true"); }
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Open the full player where the mini player is";
-                        description: "Leaving the mini player on another monitor opens the full window there. Off brings it back where it was before.";
+                        title: "在迷你播放器所在位置打开完整播放器";
+                        description: "在另一台显示器上退出迷你播放器时，会直接在该显示器打开完整窗口。关闭后会回到原来的位置。";
                         text-width: root.text-width;
                         Switch {
-                            label: "Open the full player where the mini player is";
+                            label: "在迷你播放器所在位置打开完整播放器";
                             checked: Prefs.mini-return-here;
                             toggled => { Prefs.set("mini-return-here", Prefs.mini-return-here ? "false" : "true"); }
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Daily goal";
-                        description: "Target watch time per day (Stats).";
+                        title: "每日目标";
+                        description: "每天的目标观看时长（统计页）。";
                         text-width: root.text-width;
                         Select {
                             options: Prefs.goals;
@@ -384,35 +384,35 @@ export component SettingsPage inherits Flickable {
 
         VerticalLayout {
             spacing: 12px;
-            Heading { text: "RESOURCES"; }
+            Heading { text: "资源"; }
             Group {
                 height: resources.preferred-height;
                 resources := VerticalLayout {
                     Row {
-                        title: "Keep videos and resources together";
-                        description: "Show each lecture's exercises, notes and files right under it — in the course's curriculum and the player's course panel — instead of only in a separate list.";
+                        title: "视频与资源放在一起";
+                        description: "在课程目录和播放器的课程面板中，把每节课的练习、笔记和文件直接显示在该课时下方，而不是只放在单独列表中。";
                         text-width: root.text-width;
                         Switch {
-                            label: "Keep videos and resources together";
+                            label: "视频与资源放在一起";
                             checked: Prefs.resources-inline;
                             toggled => { Prefs.set("resources-inline", Prefs.resources-inline ? "false" : "true"); }
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Pause on exercises and resources";
-                        description: "When a lecture that has resources ends, autoplay stops and offers to open them before moving on to the next lecture.";
+                        title: "遇到练习和资源时暂停";
+                        description: "当带有资源的课时结束时，自动播放会暂停，并提示先打开资源，再继续下一课时。";
                         text-width: root.text-width;
                         Switch {
-                            label: "Pause on exercises and resources";
+                            label: "遇到练习和资源时暂停";
                             checked: Prefs.pause-at-resources;
                             toggled => { Prefs.set("pause-at-resources", Prefs.pause-at-resources ? "false" : "true"); }
                         }
                     }
                     if Prefs.pause-at-resources: Divider { }
                     if Prefs.pause-at-resources: Row {
-                        title: "Resource popup timing";
-                        description: "When a lecture's resources pop up. Before the end, they show in a corner while it keeps playing; autoplay still stops at the end unless they're all ticked off.";
+                        title: "资源弹窗时机";
+                        description: "设置课时资源何时弹出。若在结束前弹出，会在角落显示且视频继续播放；除非资源全部勾选完成，否则自动播放仍会在结束时停止。";
                         text-width: root.text-width;
                         Select {
                             options: Prefs.leads;
@@ -427,64 +427,64 @@ export component SettingsPage inherits Flickable {
 
         VerticalLayout {
             spacing: 12px;
-            Heading { text: "LIBRARY MAINTENANCE"; }
+            Heading { text: "课程库维护"; }
             Group {
                 height: library.preferred-height;
                 library := VerticalLayout {
                     Row {
-                        title: "Clean up lecture titles";
-                        description: "Strip leading numbers and file extensions on import (e.g. \"01. Intro.mp4\" → \"Intro\"). Off keeps the raw file and folder names. Applies to new imports.";
+                        title: "清理课时标题";
+                        description: "导入时去掉开头的编号和文件扩展名（例如 “01. Intro.mp4” → “Intro”）。关闭则保留原始文件和文件夹名称。仅对新的导入生效。";
                         text-width: root.text-width;
                         Switch {
-                            label: "Clean up lecture titles";
+                            label: "清理课时标题";
                             checked: Prefs.clean-titles;
                             toggled => { Prefs.set("clean-titles", Prefs.clean-titles ? "false" : "true"); }
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Auto-rescan folders";
-                        description: "Re-import a course when its folder changes on disk. May briefly pause the UI while it re-scans; the course you're watching is never touched.";
+                        title: "自动重新扫描文件夹";
+                        description: "当磁盘上的课程文件夹发生变化时重新导入。重新扫描时界面可能会短暂停顿；正在观看的课程不会受影响。";
                         text-width: root.text-width;
                         Switch {
-                            label: "Auto-rescan folders";
+                            label: "自动重新扫描文件夹";
                             checked: Prefs.auto-rescan;
                             toggled => { Prefs.set("auto-rescan", Prefs.auto-rescan ? "false" : "true"); }
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Check for missing files";
-                        description: "Flag courses whose video files have moved or been deleted.";
+                        title: "检查缺失的文件";
+                        description: "标记视频文件已被移动或删除的课程。";
                         text-width: root.text-width;
                         result: Prefs.result-reconcile;
                         ActionButton {
                             key: "reconcile";
-                            text: "Check";
+                            text: "检查";
                             icon: @image-url("icons/file-search.svg");
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Rebuild search index";
-                        description: "Refresh full-text search from the current library.";
+                        title: "重建搜索索引";
+                        description: "根据当前课程库刷新全文搜索。";
                         text-width: root.text-width;
                         result: Prefs.result-reindex;
                         ActionButton {
                             key: "reindex";
-                            text: "Rebuild";
+                            text: "重建";
                             icon: @image-url("icons/refresh-cw.svg");
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Index subtitle text";
-                        description: "Parse sidecar subtitles so Search can find spoken words.";
+                        title: "索引字幕文本";
+                        description: "解析外挂字幕，让搜索能找到对白内容。";
                         text-width: root.text-width;
                         result: Prefs.result-subs;
                         ActionButton {
                             key: "subs";
-                            text: "Index";
+                            text: "索引";
                             icon: @image-url("icons/captions.svg");
                         }
                     }
@@ -494,31 +494,31 @@ export component SettingsPage inherits Flickable {
 
         VerticalLayout {
             spacing: 12px;
-            Heading { text: "DATA"; }
+            Heading { text: "数据"; }
             Group {
                 height: data.preferred-height;
                 data := VerticalLayout {
                     Row {
-                        title: "Export backup";
-                        description: "Save your library — progress, bookmarks, tags, tracks, thumbnails — to one .zip. Your video files aren't included. Handy for moving a portable copy to a new release, or as a safety backup.";
+                        title: "导出备份";
+                        description: "将课程库（进度、书签、标签、路线、缩略图）保存为一个 .zip。不包含视频文件。适合迁移便携副本或作为安全备份。";
                         text-width: root.text-width;
                         result: Prefs.result-export;
                         ActionButton {
                             key: "export";
-                            text: "Export";
+                            text: "导出";
                             icon: @image-url("icons/download.svg");
                         }
                     }
                     Divider { }
                     Row {
-                        title: "Import backup";
-                        description: "Replace this library with a backup, then restart. It re-links to your videos where they still exist — it can't restore progress onto a different download of a course.";
+                        title: "导入备份";
+                        description: "用备份替换当前课程库，然后重启。会重新关联仍存在的视频文件 —— 但无法把进度恢复到另一份课程下载上。";
                         text-width: root.text-width;
                         result: Prefs.result-import;
                         result-error: true;
                         ActionButton {
                             key: "import";
-                            text: "Import";
+                            text: "导入";
                             icon: @image-url("icons/upload.svg");
                         }
                     }
@@ -528,13 +528,13 @@ export component SettingsPage inherits Flickable {
 
         VerticalLayout {
             spacing: 12px;
-            Heading { text: "STORAGE"; }
+            Heading { text: "存储"; }
             Group {
                 height: storage.preferred-height;
                 storage := VerticalLayout {
                     Row {
-                        title: "Database";
-                        description: "Course metadata, progress, bookmarks and search indexes — videos are never stored here. Compact reclaims space freed by removed courses or cleared indexes.";
+                        title: "数据库";
+                        description: "课程元数据、进度、书签和搜索索引 —— 视频从不存储在这里。压缩可回收已删除课程或清空索引释放的空间。";
                         text-width: root.text-width;
                         result: Prefs.result-compact;
                         VerticalLayout {
@@ -550,7 +550,7 @@ export component SettingsPage inherits Flickable {
                                 alignment: end;
                                 ActionButton {
                                     key: "compact";
-                                    text: "Compact";
+                                    text: "压缩";
                                     icon: @image-url("icons/minimize-2.svg");
                                 }
                             }
@@ -558,8 +558,8 @@ export component SettingsPage inherits Flickable {
                     }
                     Divider { }
                     Row {
-                        title: "Subtitle search index";
-                        description: "Indexed subtitle text — the main database growth. Clearing frees the most space; re-index anytime with \"Index subtitle text\" above.";
+                        title: "字幕搜索索引";
+                        description: "已索引的字幕文本 —— 数据库增长的主要来源。清空可释放最多空间；随时可用上方的“索引字幕文本”重新索引。";
                         text-width: root.text-width;
                         result: Prefs.result-clearsubs;
                         VerticalLayout {
@@ -575,7 +575,7 @@ export component SettingsPage inherits Flickable {
                                 alignment: end;
                                 ActionButton {
                                     key: "clearsubs";
-                                    text: "Clear";
+                                    text: "清空";
                                     icon: @image-url("icons/trash-2.svg");
                                     active: Prefs.cues != 0;
                                 }
@@ -584,8 +584,8 @@ export component SettingsPage inherits Flickable {
                     }
                     Divider { }
                     Row {
-                        title: "Thumbnail cache";
-                        description: "Cached course covers and resume frames (stored on disk, not in the database). Clean deletes images no longer used by any course.";
+                        title: "缩略图缓存";
+                        description: "缓存的课程封面和续播画面（存储在磁盘而非数据库）。清理会删除不再被任何课程使用的图片。";
                         text-width: root.text-width;
                         result: Prefs.result-gc;
                         VerticalLayout {
@@ -601,7 +601,7 @@ export component SettingsPage inherits Flickable {
                                 alignment: end;
                                 ActionButton {
                                     key: "gc";
-                                    text: "Clean";
+                                    text: "清理";
                                     icon: @image-url("icons/trash-2.svg");
                                 }
                             }
@@ -613,16 +613,16 @@ export component SettingsPage inherits Flickable {
 
         VerticalLayout {
             spacing: 12px;
-            Heading { text: "ABOUT"; }
+            Heading { text: "关于"; }
             Group {
                 height: about.preferred-height;
                 about := VerticalLayout {
                     Row {
                         title: "Deskemy " + Prefs.version;
-                        description: "Check for a newer release. Nothing downloads until you confirm. Third-party licenses are in the licenses folder beside the app.";
+                        description: "检查是否有新版本。在你确认之前不会下载任何内容。第三方许可文件位于应用旁边的 licenses 文件夹。";
                         text-width: root.text-width;
-                        result: Updates.status == "latest" ? "You're on the latest version."
-                            : Updates.status == "available" ? "Deskemy " + Updates.version + " is available."
+                        result: Updates.status == "latest" ? "已是最新版本。"
+                            : Updates.status == "available" ? "Deskemy " + Updates.version + " 已发布。"
                             : Updates.status == "error" ? Updates.error : "";
                         result-error: Updates.status == "error";
                         UpdateButton { }
@@ -698,19 +698,19 @@ export component ImportConfirm inherits Rectangle {
                     border-color: Theme.outline-variant;
                     background: Theme.surface-container;
                     accessible-role: groupbox;
-                    accessible-label: "Import backup?";
+                    accessible-label: "导入备份?";
                     VerticalLayout {
                         padding: 20px;
                         spacing: 16px;
                         Text {
-                            text: "Import backup?";
+                            text: "导入备份？";
                             color: Theme.on-surface;
                             font-size: Theme.headline-sm;
                             font-weight: 600;
                         }
                         // max-width: see CourseDialogs.
                         Text {
-                            text: "This replaces your current library — progress, bookmarks, tags, everything — with the backup, then restarts Deskemy. Your current data can't be recovered afterward unless you exported it first.";
+                            text: "这会用备份替换当前课程库 —— 进度、书签、标签等全部内容 —— 然后重启 Deskemy。除非事先导出，否则当前数据无法恢复。";
                             color: Theme.on-surface-variant;
                             font-size: Theme.body-sm;
                             wrap: word-wrap;
@@ -720,11 +720,11 @@ export component ImportConfirm inherits Rectangle {
                             alignment: end;
                             spacing: 8px;
                             ConfirmButton {
-                                text: "Cancel";
+                                text: "取消";
                                 clicked => { Prefs.import-confirm = false; }
                             }
                             ConfirmButton {
-                                text: "Import & restart";
+                                text: "导入并重启";
                                 primary: true;
                                 clicked => { Prefs.confirm-import(); }
                             }

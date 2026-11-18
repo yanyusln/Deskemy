@@ -274,15 +274,14 @@ unsafe fn load() -> std::result::Result<Fns, String> {
         });
     }
     Err(format!(
-        "{} couldn't be loaded ({last}). {} Or set DESKEMY_LIBMPV to its path.",
+        "无法加载 {}（{last}）。{} 也可通过 DESKEMY_LIBMPV 指定其路径。",
         DLL_NAMES[0],
         if cfg!(windows) {
-            "Get mpv's shared library (the 'libmpv' build, not just the player) and place \
-             the DLL next to the executable or on PATH."
+            "请获取 mpv 的共享库（libmpv 版本，而非播放器本体），把 DLL 放到可执行文件旁边或 PATH 中。"
         } else if cfg!(target_os = "macos") {
-            "Install mpv (e.g. `brew install mpv`)."
+            "请安装 mpv（例如 `brew install mpv`）。"
         } else {
-            "Install your distribution's libmpv package (e.g. libmpv2)."
+            "请安装发行版的 libmpv 包（例如 libmpv2）。"
         }
     ))
 }

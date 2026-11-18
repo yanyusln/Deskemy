@@ -26,9 +26,9 @@ use std::sync::{Arc, Mutex};
 /// The button's label while a folder is being probed.
 pub fn progress_label(done: usize, total: usize) -> String {
     if total == 0 {
-        "Scanning…".into()
+        "扫描中…".into()
     } else {
-        format!("Probing {done}/{total}")
+        format!("解析中 {done}/{total}")
     }
 }
 
@@ -45,7 +45,7 @@ pub fn unplayable_note(n: i64) -> String {
 /// would only fail on import.
 pub fn check(preview: &ImportPreview, folder: &Path) -> Result<(), String> {
     if preview.lectures == 0 {
-        return Err(format!("No playable video files found in {}.", folder.display()));
+        return Err(format!("在 {} 中未找到可播放的视频文件。", folder.display()));
     }
     Ok(())
 }
@@ -81,22 +81,22 @@ pub fn find_courses(given: &[PathBuf]) -> Result<Courses, String> {
     folders.retain(|f| seen.insert(f.clone()));
     match (folders.is_empty(), given) {
         (true, [one]) if has_archives(one) => Err(format!(
-            "No playable video files found in {}. It holds archives (.zip, .rar, .7z): extract them, then add the folder again.",
+            "在 {} 中未找到可播放的视频文件。该文件夹包含压缩包（.zip、.rar、.7z）：请先解压，再重新添加文件夹。",
             one.display()
         )),
-        (true, [one]) => Err(format!("No playable video files found in {}.", one.display())),
-        (true, _) => Err("No playable video files found in those folders.".into()),
+        (true, [one]) => Err(format!("在 {} 中未找到可播放的视频文件。", one.display())),
+        (true, _) => Err("这些文件夹中未找到可播放的视频文件。".into()),
         (false, _) => Ok(Courses { folders, parent }),
     }
 }
 
 /// The sidebar button's label during a batch.
 pub fn batch_label(n: usize, total: usize) -> String {
-    format!("Importing {n}/{total}")
+    format!("正在导入 {n}/{total}")
 }
 
 fn lectures_label(n: i64) -> String {
-    format!("Imported · {}", crate::career::count(n, "lecture"))
+    format!("已导入 · {}", crate::career::count(n, "个课时"))
 }
 
 type Staged = Arc<Mutex<Option<(PathBuf, ImportSnapshot, ImportPlan)>>>;
@@ -245,7 +245,7 @@ impl Importing {
         }
         let folder = match dialogs::pick("add folder", || {
             rfd::FileDialog::new()
-                .set_title("Add a course folder")
+                .set_title("添加课程文件夹")
                 .set_parent(&ui.window().window_handle())
                 .pick_folder()
         }) {
@@ -269,7 +269,7 @@ impl Importing {
         let import = ui.global::<Import>();
         let given: Vec<PathBuf> = given.into_iter().filter(|p| p.is_dir()).collect();
         if given.is_empty() {
-            import.set_error("Only folders can be imported: a course folder, or a folder of courses.".into());
+            import.set_error("只能导入文件夹：一个课程文件夹，或包含多门课程的文件夹。".into());
             return;
         }
         import.set_error("".into());
@@ -374,7 +374,7 @@ impl Importing {
             for (n, (row, folder)) in picks.iter().enumerate() {
                 if stop.load(Ordering::Relaxed) {
                     for (row, _) in &picks[n..] {
-                        set_row(&weak, *row, 0, "Not imported: stopped".into());
+                        set_row(&weak, *row, 0, "未导入：已停止".into());
                     }
                     break;
                 }
@@ -497,7 +497,7 @@ pub fn show_preview(import: &Import<'_>, p: &ImportPreview) {
     import.set_lectures(p.lectures as i32);
     import.set_resources(p.resources as i32);
     import.set_subtitles(p.subtitles as i32);
-    import.set_runtime(p.total_duration.map(|d| format!("Total runtime · {}", format_duration(Some(d)))).unwrap_or_default().into());
+    import.set_runtime(p.total_duration.map(|d| format!("总时长 · {}", format_duration(Some(d)))).unwrap_or_default().into());
     import.set_unplayable(unplayable_note(p.unplayable).into());
     import.set_open(true);
 }
@@ -612,8 +612,8 @@ mod tests {
 
     #[test]
     fn labels_read_like_the_tauri_sidebar() {
-        assert_eq!(progress_label(0, 0), "Scanning…");
-        assert_eq!(progress_label(3, 12), "Probing 3/12");
+        assert_eq!(progress_label(0, 0), "扫描中…");
+        assert_eq!(progress_label(3, 12), "解析中 3/12");
         assert_eq!(unplayable_note(0), "");
         assert_eq!(unplayable_note(1), "1 video couldn't be opened — imported but flagged.");
         assert_eq!(unplayable_note(4), "4 videos couldn't be opened — imported but flagged.");
@@ -647,21 +647,21 @@ mod tests {
         assert_eq!(found.folders, [dir("Single"), dir("Courses/Go"), dir("Courses/Rust")]);
         assert_eq!(found.parent, None);
         // Nothing to import.
-        assert!(find_courses(&[dir("Empty")]).unwrap_err().starts_with("No playable video files found in"));
+        assert!(find_courses(&[dir("Empty")]).unwrap_err().starts_with("在"));
         // A download not yet extracted says so.
-        assert!(find_courses(&[dir("Packed")]).unwrap_err().contains("extract them"));
+        assert!(find_courses(&[dir("Packed")]).unwrap_err().contains("请先解压"));
         assert_eq!(
             find_courses(&[dir("Empty"), dir("Empty")]).unwrap_err(),
-            "No playable video files found in those folders."
+            "这些文件夹中未找到可播放的视频文件。"
         );
-        assert_eq!(batch_label(2, 5), "Importing 2/5");
-        assert_eq!(lectures_label(1), "Imported · 1 lecture");
+        assert_eq!(batch_label(2, 5), "正在导入 2/5");
+        assert_eq!(lectures_label(1), "已导入 · 1 个课时");
     }
 
     #[test]
     fn a_folder_with_no_videos_is_refused_before_the_preview() {
         assert!(check(&preview(3), Path::new("C:/courses/rust")).is_ok());
         let err = check(&preview(0), Path::new("C:/courses/empty")).unwrap_err();
-        assert!(err.starts_with("No playable video files found in"), "{err}");
+        assert!(err.starts_with("在"), "{err}");
     }
 }

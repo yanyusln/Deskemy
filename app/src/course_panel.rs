@@ -111,7 +111,7 @@ pub fn resources(course: &CourseDetail, attachments: &[Attachment], current: Opt
     let section_level: Vec<ResourceItem> =
         in_section.iter().filter(|a| a.lecture_id.is_none()).map(|a| item(a)).collect();
     if !section_level.is_empty() {
-        groups.push(("Section resources".into(), section_level));
+        groups.push(("本章资源".into(), section_level));
     }
 
     let count = groups.iter().map(|(_, items)| items.len()).sum();
@@ -246,7 +246,7 @@ mod tests {
             vec![
                 ("Users".into(), vec!["users.pdf".into()]),
                 ("Policies".into(), vec!["policies.pdf".into()]),
-                ("Section resources".into(), vec!["section-notes.pdf".into()]),
+                ("本章资源".into(), vec!["section-notes.pdf".into()]),
             ]
         );
     }

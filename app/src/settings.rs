@@ -26,7 +26,7 @@ pub fn lock(config: &Config) -> MutexGuard<'_, AppConfig> {
     config.lock().unwrap_or_else(|e| e.into_inner())
 }
 
-pub const THEMES: [(&str, &str); 3] = [("dark", "Dark"), ("light", "Light"), ("system", "System")];
+pub const THEMES: [(&str, &str); 3] = [("dark", "深色"), ("light", "浅色"), ("system", "跟随系统")];
 pub const SPEEDS: [f64; 7] = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 pub const GOALS: [i64; 6] = [15, 30, 45, 60, 90, 120];
 /// How early a lecture's resources are offered, in seconds before its end.
@@ -38,15 +38,15 @@ pub fn speed_label(speed: f64) -> String {
 }
 
 fn goal_label(minutes: i64) -> String {
-    format!("{minutes} min")
+    format!("{minutes} 分钟")
 }
 
-/// "At the end", "30 s before", "1 min before".
+/// "课时结束时", "提前 30 秒", "提前 1 分钟"。
 fn lead_label(secs: u32) -> String {
     match secs {
-        0 => "At the end".into(),
-        s if s % 60 == 0 => format!("{} min before", s / 60),
-        s => format!("{s} s before"),
+        0 => "课时结束时".into(),
+        s if s % 60 == 0 => format!("提前 {} 分钟", s / 60),
+        s => format!("提前 {s} 秒"),
     }
 }
 
@@ -94,7 +94,7 @@ pub fn grouped(n: i64) -> String {
 }
 
 fn plural(n: i64, word: &str) -> String {
-    format!("{n} {word}{}", if n == 1 { "" } else { "s" })
+    format!("{n} {word}")
 }
 
 /// "512 B", "12 KB", "3.4 MB" — as the Tauri page.
@@ -108,37 +108,37 @@ pub fn bytes(n: u64) -> String {
 
 pub fn reconcile_message(r: &ReconcileReport) -> String {
     if r.files_missing == 0 {
-        format!("All files present across {}.", plural(r.courses_checked, "course"))
+        format!("已检查 {}，文件都在。", plural(r.courses_checked, "门课程"))
     } else {
         format!(
-            "{} across {} — flagged in the library.",
-            plural(r.files_missing, "missing file"),
-            plural(r.courses_missing, "course")
+            "{}缺失，涉及 {} —— 已在课程库中标记。",
+            plural(r.files_missing, "个文件"),
+            plural(r.courses_missing, "门课程")
         )
     }
 }
 
 pub fn subtitles_message(cues: i64) -> String {
     if cues == 0 {
-        "No sidecar subtitle files found.".into()
+        "未找到外挂字幕文件。".into()
     } else {
-        format!("Indexed {}.", plural(cues, "subtitle line"))
+        format!("已索引 {}。", plural(cues, "条字幕"))
     }
 }
 
 pub fn gc_message(r: &GcReport) -> String {
     if r.removed == 0 {
-        "Cache already clean.".into()
+        "缓存已经很干净。".into()
     } else {
-        format!("Removed {} ({}).", plural(r.removed, "file"), bytes(r.freed_bytes.max(0) as u64))
+        format!("已删除 {}（{}）。", plural(r.removed, "个文件"), bytes(r.freed_bytes.max(0) as u64))
     }
 }
 
 pub fn clear_message(cues: i64) -> String {
     if cues == 0 {
-        "Subtitle index already empty.".into()
+        "字幕索引已经是空的。".into()
     } else {
-        format!("Cleared {}. Compact the database to reclaim the space.", plural(cues, "cue"))
+        format!("已清空 {}。压缩数据库可回收空间。", plural(cues, "条字幕"))
     }
 }
 
@@ -149,14 +149,14 @@ pub fn run_task(key: &str, db: &Db, data_dir: Option<&std::path::Path>) -> Strin
     let thumbs = data_dir.map(|d| d.join(courses::THUMBNAILS_DIR));
     let result = match (key, data_dir, thumbs.as_deref()) {
         ("reconcile", ..) => maintenance::reconcile(db).map(|r| reconcile_message(&r)),
-        ("reindex", ..) => maintenance::reindex_search(&conn()).map(|n| format!("Reindexed {}.", plural(n, "item"))),
+        ("reindex", ..) => maintenance::reindex_search(&conn()).map(|n| format!("已重建 {}。", plural(n, "项索引"))),
         ("subs", ..) => maintenance::reindex_subtitles(db).map(subtitles_message),
         ("clearsubs", ..) => maintenance::clear_subtitles(&conn()).map(clear_message),
         ("compact", Some(dir), _) => {
-            maintenance::compact(&conn(), dir).map(|n| format!("Database compacted — now {}.", bytes(n)))
+            maintenance::compact(&conn(), dir).map(|n| format!("数据库已压缩 —— 当前 {}。", bytes(n)))
         }
         ("gc", _, Some(thumbs)) => maintenance::gc_thumbnails(&conn(), thumbs).map(|r| gc_message(&r)),
-        _ => return "Not available without a data folder.".into(),
+        _ => return "没有数据文件夹，无法使用。".into(),
     };
     result.unwrap_or_else(|e| e.to_string())
 }
@@ -173,7 +173,7 @@ pub fn show_storage(ui: &AppWindow, db: &Db, data_dir: Option<&std::path::Path>)
             prefs.set_db_size(bytes(s.db_bytes).into());
             prefs.set_thumbnail_size(bytes(s.thumbnail_bytes).into());
             prefs.set_cues(s.subtitle_cues as i32);
-            prefs.set_cues_label(format!("{} cues", grouped(s.subtitle_cues)).into());
+            prefs.set_cues_label(format!("{} 条字幕", grouped(s.subtitle_cues)).into());
         }
         None => {
             prefs.set_db_size("—".into());
@@ -191,7 +191,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn export(db: &Db, data_dir: &Path, dest: &Path) -> String {
     let (config, thumbs) = (data_dir.join(paths::CONFIG_FILE), data_dir.join(courses::THUMBNAILS_DIR));
     match maintenance::export_backup(db, data_dir, &config, &thumbs, dest, VERSION) {
-        Ok(()) => "Backup saved.".into(),
+        Ok(()) => "备份已保存。".into(),
         Err(e) => e.to_string(),
     }
 }
@@ -263,14 +263,14 @@ impl SettingsPage {
 
     fn export(&self, ui: &AppWindow) {
         if self.data_dir.is_none() {
-            ui.global::<Prefs>().invoke_set_result("export".into(), "Not available without a data folder.".into());
+            ui.global::<Prefs>().invoke_set_result("export".into(), "没有数据文件夹，无法使用。".into());
             return;
         }
         let dest = match dialogs::pick("export backup", || {
             rfd::FileDialog::new()
-                .set_title("Export backup")
+                .set_title("导出备份")
                 .set_file_name("deskemy-backup.zip")
-                .add_filter("Deskemy backup", &["zip"])
+                .add_filter("Deskemy 备份", &["zip"])
                 .set_parent(&ui.window().window_handle())
                 .save_file()
         }) {
@@ -283,7 +283,7 @@ impl SettingsPage {
         };
         self.spawn(ui, "export".into(), move |db, dir| match dir {
             Some(dir) => export(db, dir, &dest),
-            None => "Not available without a data folder.".into(),
+            None => "没有数据文件夹，无法使用。".into(),
         });
     }
 
@@ -291,8 +291,8 @@ impl SettingsPage {
     fn choose_import(&self, ui: &AppWindow) {
         let src = match dialogs::pick("import backup", || {
             rfd::FileDialog::new()
-                .set_title("Import backup")
-                .add_filter("Deskemy backup", &["zip"])
+                .set_title("导入备份")
+                .add_filter("Deskemy 备份", &["zip"])
                 .set_parent(&ui.window().window_handle())
                 .pick_file()
         }) {
@@ -315,7 +315,7 @@ impl SettingsPage {
         let prefs = ui.global::<Prefs>();
         let staged = match (self.data_dir.as_deref(), self.import_from.borrow_mut().take()) {
             (Some(dir), Some(src)) => backup::stage_import(dir, &src, db::SCHEMA_VERSION).map_err(|e| e.to_string()),
-            _ => Err("Not available without a data folder.".into()),
+            _ => Err("没有数据文件夹，无法使用。".into()),
         };
         match staged {
             Ok(()) => {
@@ -346,7 +346,7 @@ impl SettingsPage {
         prefs.set_leads(options(LEADS.iter().map(|s| (s.to_string(), lead_label(*s))).collect()));
 
         prefs.set_theme(c.theme.clone().into());
-        let theme = THEMES.iter().find(|(v, _)| *v == c.theme).map_or("Dark", |(_, l)| *l);
+        let theme = THEMES.iter().find(|(v, _)| *v == c.theme).map_or("深色", |(_, l)| *l);
         prefs.set_theme_label(theme.into());
         prefs.set_speed(c.default_speed.to_string().into());
         prefs.set_speed_label(speed_label(c.default_speed).into());
@@ -432,9 +432,9 @@ mod tests {
     fn labels_match_the_tauri_page() {
         assert_eq!(speed_label(1.0), "1×");
         assert_eq!(speed_label(0.75), "0.75×");
-        assert_eq!(goal_label(90), "90 min");
+        assert_eq!(goal_label(90), "90 分钟");
         let leads: Vec<String> = LEADS.iter().map(|s| lead_label(*s)).collect();
-        assert_eq!(leads, ["At the end", "10 s before", "30 s before", "1 min before"]);
+        assert_eq!(leads, ["课时结束时", "提前 10 秒", "提前 30 秒", "提前 1 分钟"]);
     }
 
     #[test]
@@ -446,22 +446,22 @@ mod tests {
         assert_eq!(bytes(12 * 1024 + 300), "12 KB");
         assert_eq!(bytes(3_565_158), "3.4 MB");
         let ok = ReconcileReport { courses_checked: 1, courses_missing: 0, files_missing: 0 };
-        assert_eq!(reconcile_message(&ok), "All files present across 1 course.");
+        assert_eq!(reconcile_message(&ok), "已检查 1 门课程，文件都在。");
         let bad = ReconcileReport { courses_checked: 7, courses_missing: 2, files_missing: 1 };
-        assert_eq!(reconcile_message(&bad), "1 missing file across 2 courses — flagged in the library.");
-        assert_eq!(subtitles_message(0), "No sidecar subtitle files found.");
-        assert_eq!(subtitles_message(2), "Indexed 2 subtitle lines.");
-        assert_eq!(gc_message(&GcReport { removed: 0, freed_bytes: 0 }), "Cache already clean.");
-        assert_eq!(gc_message(&GcReport { removed: 3, freed_bytes: 2048 }), "Removed 3 files (2 KB).");
-        assert_eq!(clear_message(1), "Cleared 1 cue. Compact the database to reclaim the space.");
+        assert_eq!(reconcile_message(&bad), "1 个文件缺失，涉及 2 门课程 —— 已在课程库中标记。");
+        assert_eq!(subtitles_message(0), "未找到外挂字幕文件。");
+        assert_eq!(subtitles_message(2), "已索引 2 条字幕。");
+        assert_eq!(gc_message(&GcReport { removed: 0, freed_bytes: 0 }), "缓存已经很干净。");
+        assert_eq!(gc_message(&GcReport { removed: 3, freed_bytes: 2048 }), "已删除 3 个文件（2 KB）。");
+        assert_eq!(clear_message(1), "已清空 1 条字幕。压缩数据库可回收空间。");
     }
 
     #[test]
     fn tasks_need_a_data_folder_for_files_on_disk() {
         let db: Db = std::sync::Arc::new(std::sync::Mutex::new(deskemy_core::db::open_in_memory().unwrap()));
-        assert_eq!(run_task("reindex", &db, None), "Reindexed 0 items.");
-        assert_eq!(run_task("clearsubs", &db, None), "Subtitle index already empty.");
-        assert_eq!(run_task("compact", &db, None), "Not available without a data folder.");
-        assert_eq!(run_task("gc", &db, None), "Not available without a data folder.");
+        assert_eq!(run_task("reindex", &db, None), "已重建 0 项索引。");
+        assert_eq!(run_task("clearsubs", &db, None), "字幕索引已经是空的。");
+        assert_eq!(run_task("compact", &db, None), "没有数据文件夹，无法使用。");
+        assert_eq!(run_task("gc", &db, None), "没有数据文件夹，无法使用。");
     }
 }

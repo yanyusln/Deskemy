@@ -224,6 +224,18 @@ pub fn set_thumbnail(conn: &Connection, id: &str, path: Option<&str>) -> Result<
     Ok(())
 }
 
+/// Fetch a course's current thumbnail_path, if any.
+pub fn course_thumbnail(conn: &Connection, course_id: &str) -> Result<Option<String>> {
+    Ok(conn
+        .query_row(
+            "SELECT thumbnail_path FROM courses WHERE id = ?1",
+            params![course_id],
+            |r| r.get::<_, Option<String>>(0),
+        )
+        .optional()?
+        .flatten())
+}
+
 pub fn tags_for_course(conn: &Connection, course_id: &str) -> Result<Vec<String>> {
     let mut stmt =
         conn.prepare("SELECT tag FROM course_tags WHERE course_id = ?1 ORDER BY tag")?;
@@ -297,6 +309,17 @@ pub fn all_thumbnail_paths(conn: &Connection) -> Result<Vec<String>> {
     )?;
     let rows = stmt
         .query_map([], |r| r.get::<_, String>(0))?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    Ok(rows)
+}
+
+/// (course id, cover path) of every course with a cover — for the oversized-
+/// cover cache migration.
+pub fn course_covers(conn: &Connection) -> Result<Vec<(String, String)>> {
+    let mut stmt =
+        conn.prepare("SELECT id, thumbnail_path FROM courses WHERE thumbnail_path IS NOT NULL")?;
+    let rows = stmt
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
         .collect::<rusqlite::Result<Vec<_>>>()?;
     Ok(rows)
 }
@@ -636,7 +659,7 @@ pub fn pair_resource(conn: &Connection, attachment_id: &str, lecture_id: Option<
         params![attachment_id, lecture_path],
     )?;
     if paired == 0 {
-        return Err(DeskemyError::NotFound(format!("resource {attachment_id}")));
+        return Err(DeskemyError::NotFound(format!("资源 {attachment_id}")));
     }
     Ok(())
 }
@@ -648,7 +671,7 @@ pub fn unpair_resource(conn: &Connection, attachment_id: &str) -> Result<()> {
     let exists: bool =
         conn.query_row("SELECT EXISTS (SELECT 1 FROM attachments WHERE id = ?1)", params![attachment_id], |r| r.get(0))?;
     if !exists {
-        return Err(DeskemyError::NotFound(format!("resource {attachment_id}")));
+        return Err(DeskemyError::NotFound(format!("资源 {attachment_id}")));
     }
     conn.execute(
         "DELETE FROM resource_pairings
@@ -1455,7 +1478,7 @@ pub fn add_bookmark(
         params![id, lecture_id, position_seconds, label, created_at],
     )?;
     if n == 0 {
-        return Err(DeskemyError::NotFound(format!("lecture {lecture_id}")));
+        return Err(DeskemyError::NotFound(format!("课时 {lecture_id}")));
     }
     Ok(Bookmark {
         id,

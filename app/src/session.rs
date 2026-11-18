@@ -177,7 +177,7 @@ impl Session {
             let db = self.db();
             let (_, course_id, _) = queries::get_lecture_playback(&db, lecture_id)
                 .map_err(|e| e.to_string())?
-                .ok_or_else(|| format!("lecture {lecture_id} not found"))?;
+                .ok_or_else(|| format!("未找到课时 {lecture_id}"))?;
             let items = queries::list_course_playlist(&db, &course_id).map_err(|e| e.to_string())?;
             (course_id, items)
         };
@@ -275,7 +275,7 @@ impl Session {
 
     fn load_current(&self, from: Start) -> Result<(), String> {
         let mut inner = self.inner();
-        let item = inner.items.get(inner.index).cloned().ok_or("empty playlist")?;
+        let item = inner.items.get(inner.index).cloned().ok_or("播放列表为空")?;
         let course_id = inner.course_id.clone().unwrap_or_default();
 
         let db = self.db();
@@ -660,7 +660,7 @@ impl Session {
     /// Bookmark `position` in the playing lecture.
     pub fn add_bookmark(&self, position: f64, label: Option<&str>) -> Result<(), String> {
         let inner = self.inner();
-        let lecture = inner.lecture_id.as_deref().ok_or("nothing from the library is playing")?;
+        let lecture = inner.lecture_id.as_deref().ok_or("当前没有正在播放的课程内容")?;
         queries::add_bookmark(&self.db(), lecture, position, label)
             .map(|_| ())
             .map_err(|e| e.to_string())

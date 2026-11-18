@@ -38,7 +38,7 @@ export component UpdateBanner inherits Rectangle {
             colorize: Theme.on-primary-container;
         }
         Text {
-            text: "Deskemy " + Updates.version + " is available.";
+            text: "Deskemy " + Updates.version + " 已发布。";
             color: Theme.on-primary-container;
             font-size: Theme.label-md;
             font-weight: 600;
@@ -55,8 +55,8 @@ export component UpdateBanner inherits Rectangle {
             accessible-role: button;
             accessible-label: label.text;
             label := Text {
-                text: Updates.status == "downloading" ? "Downloading " + Updates.progress + "%"
-                    : Updates.status == "restarting" ? "Restarting…" : "Update";
+                text: Updates.status == "downloading" ? "正在下载 " + Updates.progress + "%"
+                    : Updates.status == "restarting" ? "正在重启…" : "更新";
                 color: Theme.on-primary-container;
                 font-size: Theme.label-md;
                 font-weight: 600;
@@ -74,7 +74,7 @@ export component UpdateBanner inherits Rectangle {
             border-radius: 4px;
             background: close-touch.has-hover ? #ffffff33 : transparent;
             accessible-role: button;
-            accessible-label: "Dismiss update notice";
+            accessible-label: "忽略更新提示";
             Image {
                 source: @image-url("icons/x.svg");
                 width: 16px;

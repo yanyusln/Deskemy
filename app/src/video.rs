@@ -706,7 +706,7 @@ fn bookmark_rows(session: &Session) -> Vec<BookmarkRow> {
         .map(|b| BookmarkRow {
             id: b.id.into(),
             time: tracks::clock(b.position_seconds).into(),
-            label: b.label.unwrap_or_else(|| "Bookmark".into()).into(),
+            label: b.label.unwrap_or_else(|| "书签".into()).into(),
             position: b.position_seconds as f32,
         })
         .collect()
@@ -989,7 +989,7 @@ fn pump_events(mpv: &Mpv, session: &Session, seeks: &Arc<Seeks>, stats_open: &At
         let ends = now + chrono::Duration::milliseconds((remaining * 1000.0) as i64);
         let clock = now.format("%H:%M").to_string();
         let ends_at = if s.duration > 0.0 {
-            format!("Ends at {}", ends.format("%H:%M"))
+            format!("结束于 {}", ends.format("%H:%M"))
         } else {
             String::new()
         };
@@ -999,7 +999,7 @@ fn pump_events(mpv: &Mpv, session: &Session, seeks: &Arc<Seeks>, stats_open: &At
             Sleep::EndOfLecture => ("lecture", String::new(), 0),
             Sleep::At { deadline, minutes } => {
                 let left = deadline.saturating_duration_since(std::time::Instant::now());
-                ("minutes", format!("{}m", left.as_secs().div_ceil(60).max(1)), minutes as i32)
+                ("minutes", format!("{} 分钟", left.as_secs().div_ceil(60).max(1)), minutes as i32)
             }
         };
 

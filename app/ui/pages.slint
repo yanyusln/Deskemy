@@ -109,10 +109,10 @@ export component FavoritesPage inherits Flickable {
 
         PageTitle {
             icon: @image-url("icons/star.svg");
-            text: "Favorites";
+            text: "收藏";
         }
         if Lists.favorites.length == 0: Empty {
-            text: "No favorites yet. Star a course from its page to pin it here.";
+            text: "还没有收藏。在课程页面点击星标即可固定到这里。";
         }
         if Lists.favorites.length > 0: CourseGrid {
             cards: Lists.favorites;
@@ -137,10 +137,10 @@ export component HistoryPage inherits Flickable {
 
         PageTitle {
             icon: @image-url("icons/history.svg");
-            text: "History";
+            text: "历史";
         }
         if Lists.history.length == 0: Empty {
-            text: "Nothing watched yet. Play a lecture and it'll show up here so you can pick up where you left off.";
+            text: "还没有观看记录。播放任意课时后，这里会记录进度，方便你接着看。";
         }
         for group in Lists.history: VerticalLayout {
             spacing: 8px;
@@ -159,7 +159,7 @@ export component HistoryPage inherits Flickable {
                             height: 56px;
                             background: touch.has-hover ? Theme.surface-container : Theme.surface-container-low;
                             accessible-role: button;
-                            accessible-label: "Resume " + row.title;
+                            accessible-label: "继续播放 " + row.title;
                             touch := TouchArea {
                                 mouse-cursor: pointer;
                                 clicked => { Lists.play-at(row.lecture, row.start); }
@@ -206,7 +206,7 @@ export component HistoryPage inherits Flickable {
                                             colorize: Theme.secondary-container;
                                         }
                                         Text {
-                                            text: "Done";
+                                            text: "已完成";
                                             color: Theme.secondary-container;
                                             font-size: Theme.label-md;
                                             font-weight: 600;
@@ -245,7 +245,7 @@ export component HistoryPage inherits Flickable {
                                             colorize: Theme.accent-blue;
                                         }
                                         Text {
-                                            text: "Resume";
+                                            text: "继续播放";
                                             color: Theme.accent-blue;
                                             font-size: Theme.label-md;
                                             font-weight: 600;
@@ -277,10 +277,10 @@ export component BookmarksPage inherits Flickable {
 
         PageTitle {
             icon: @image-url("icons/bookmark.svg");
-            text: "Bookmarks";
+            text: "书签";
         }
         if Lists.bookmarks.length == 0: Empty {
-            text: "No bookmarks yet. While watching a lecture, open the bookmark panel in the player to add one.";
+            text: "还没有书签。观看课时时，在播放器中打开书签面板即可添加。";
         }
         for group in Lists.bookmarks: VerticalLayout {
             spacing: 8px;
@@ -357,7 +357,7 @@ export component BookmarksPage inherits Flickable {
                                     border-radius: 6px;
                                     background: delete-touch.has-hover ? Theme.surface-container-highest : transparent;
                                     accessible-role: button;
-                                    accessible-label: "Delete bookmark";
+                                    accessible-label: "删除书签";
                                     Image {
                                         source: @image-url("icons/trash-2.svg");
                                         width: 16px;

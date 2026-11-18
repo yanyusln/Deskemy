@@ -181,7 +181,7 @@ pub fn label(track: &Track) -> String {
     }
     let parts: Vec<&str> = [&track.lang, &track.title].into_iter().flatten().map(String::as_str).collect();
     if parts.is_empty() {
-        format!("Track {}", track.id)
+        format!("音轨 {}", track.id)
     } else {
         parts.join(" · ")
     }
@@ -213,7 +213,7 @@ fn item(id: i64, label: String, detail: String, selected: bool) -> MenuItem {
 
 /// "Subtitles off" first (id -1), then each subtitle track.
 pub fn subtitle_menu(t: &Tracks) -> Vec<MenuItem> {
-    std::iter::once(item(-1, "Subtitles off".into(), String::new(), t.sid.is_none()))
+    std::iter::once(item(-1, "字幕关闭".into(), String::new(), t.sid.is_none()))
         .chain(t.subtitles.iter().map(|s| item(s.id, label(s), String::new(), t.sid == Some(s.id))))
         .collect()
 }
@@ -230,7 +230,7 @@ pub fn chapter_menu(t: &Tracks) -> Vec<MenuItem> {
         .iter()
         .enumerate()
         .map(|(i, c)| {
-            let title = c.title.clone().unwrap_or_else(|| format!("Chapter {}", i + 1));
+            let title = c.title.clone().unwrap_or_else(|| format!("章节 {}", i + 1));
             item(i as i64, title, clock(c.time), t.chapter == i as i64)
         })
         .collect()
@@ -314,7 +314,7 @@ mod tests {
         assert_eq!(label(&track(2, Some("en"), None, Some("01 Intro.en.srt"))), "en · 01 Intro.en.srt");
         assert_eq!(label(&track(2, None, None, Some("01 Intro.srt"))), "01 Intro.srt");
         assert_eq!(label(&track(1, Some("eng"), Some("Director"), None)), "eng · Director");
-        assert_eq!(label(&track(3, None, None, None)), "Track 3");
+        assert_eq!(label(&track(3, None, None, None)), "音轨 3");
     }
 
     #[test]
@@ -344,7 +344,7 @@ mod tests {
         };
         let menu = chapter_menu(&t);
         assert_eq!((menu[0].label.as_str(), menu[0].detail.as_str()), ("Intro", "0:00"));
-        assert_eq!((menu[1].label.as_str(), menu[1].detail.as_str()), ("Chapter 2", "1:02:05"));
+        assert_eq!((menu[1].label.as_str(), menu[1].detail.as_str()), ("章节 2", "1:02:05"));
         assert!(menu[1].selected && !menu[0].selected);
     }
 

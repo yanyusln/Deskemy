@@ -176,19 +176,19 @@ export component PdfViewer inherits Rectangle {
                     ToolButton {
                         y: (parent.height - self.height) / 2;
                         icon: @image-url("icons/chevron-up.svg");
-                        label: "Previous page";
+                        label: "上一页";
                         active: Pdf.current > 1;
                         clicked => { Pdf.step(-1); }
                     }
                     ToolButton {
                         y: (parent.height - self.height) / 2;
                         icon: @image-url("icons/chevron-down.svg");
-                        label: "Next page";
+                        label: "下一页";
                         active: Pdf.current < Pdf.pages.length;
                         clicked => { Pdf.step(1); }
                     }
                     Text {
-                        text: Pdf.pages.length == 0 ? "" : "Page \{Pdf.current} of \{Pdf.pages.length}";
+                        text: Pdf.pages.length == 0 ? "" : "第 \{Pdf.current} / \{Pdf.pages.length} 页";
                         color: Theme.on-surface-variant;
                         font-size: Theme.label-md;
                         vertical-alignment: center;
@@ -198,20 +198,20 @@ export component PdfViewer inherits Rectangle {
                     ToolButton {
                         y: (parent.height - self.height) / 2;
                         icon: @image-url("icons/minus.svg");
-                        label: "Zoom out";
+                        label: "缩小";
                         clicked => { Pdf.zoom-by(-1); }
                     }
                     ToolButton {
                         y: (parent.height - self.height) / 2;
                         has-icon: false;
                         text: Math.round(Pdf.zoom * 100) + "%";
-                        label: "Fit to width";
+                        label: "适应宽度";
                         clicked => { Pdf.zoom-by(0); }
                     }
                     ToolButton {
                         y: (parent.height - self.height) / 2;
                         icon: @image-url("icons/plus.svg");
-                        label: "Zoom in";
+                        label: "放大";
                         clicked => { Pdf.zoom-by(1); }
                     }
                     Rectangle {
@@ -223,15 +223,15 @@ export component PdfViewer inherits Rectangle {
                     ToolButton {
                         y: (parent.height - self.height) / 2;
                         icon: @image-url("icons/file-text.svg");
-                        text: "Open in your PDF app";
+                        text: "用系统 PDF 应用打开";
                         clicked => { Pdf.open-outside(); }
                     }
                     // Tick it off here, as in the course's list.
                     if Pdf.resource != "": ToolButton {
                         y: (parent.height - self.height) / 2;
                         icon: Pdf.done ? @image-url("icons/circle-check.svg") : @image-url("icons/circle.svg");
-                        text: Pdf.done ? "Done" : "Mark as done";
-                        label: Pdf.done ? "Mark as not done" : "Mark as done";
+                        text: Pdf.done ? "已完成" : "标记为已完成";
+                        label: Pdf.done ? "标记为未完成" : "标记为已完成";
                         clicked => { Pdf.mark-done(!Pdf.done); }
                     }
                 }
@@ -277,13 +277,13 @@ export component PdfViewer inherits Rectangle {
                                 height: parent.height * link.h;
                                 mouse-cursor: pointer;
                                 accessible-role: button;
-                                accessible-label: link.page >= 0 ? "Go to page \{link.page + 1}" : link.url;
+                                accessible-label: link.page >= 0 ? "转到第 \{link.page + 1} 页" : link.url;
                                 accessible-action-default => { Pdf.follow(link.page, link.url); }
                                 clicked => { Pdf.follow(link.page, link.url); }
                                 changed has-hover => {
                                     if self.has-hover {
-                                        root.hovered-url = link.page >= 0 ? "Page \{link.page + 1}" : link.url;
-                                    } else if root.hovered-url == (link.page >= 0 ? "Page \{link.page + 1}" : link.url) {
+                                        root.hovered-url = link.page >= 0 ? "第 \{link.page + 1} 页" : link.url;
+                                    } else if root.hovered-url == (link.page >= 0 ? "第 \{link.page + 1} 页" : link.url) {
                                         root.hovered-url = "";
                                     }
                                 }
@@ -310,7 +310,7 @@ export component PdfViewer inherits Rectangle {
                 }
             }
             Text {
-                text: Pdf.error != "" ? Pdf.error : "Opening…";
+                text: Pdf.error != "" ? Pdf.error : "正在打开…";
                 color: Pdf.error != "" ? Theme.on-surface : Theme.on-surface-variant;
                 font-size: Theme.body-md;
                 horizontal-alignment: center;

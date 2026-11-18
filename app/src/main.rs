@@ -177,6 +177,61 @@ fn main() -> Result<(), slint::PlatformError> {
     let library = library::LibraryPage::new(db.clone());
     library.reload(&ui);
     let thumbs = paths::data_dir().map(|d| d.join(deskemy_core::courses::THUMBNAILS_DIR));
+
+    // ---- 后台补缩略图：为缺失封面的课程自动生成 ----
+    {
+        let thumbs_dir = thumbs.clone();
+        let db_for_thumbs = db.clone();
+        std::thread::spawn(move || {
+            let Some(thumbs_dir) = thumbs_dir else { return };
+            let conn = db_for_thumbs.lock().unwrap_or_else(|e| e.into_inner());
+            let summaries = deskemy_core::db::queries::list_course_summaries(&conn).unwrap_or_default();
+            drop(conn); // 尽早释放锁，抽帧是长时间 IO 操作
+            let thumbs_dir_ref = thumbs_dir.as_path();
+            let mut generated = 0u32;
+            for c in &summaries {
+                // 已有缩略图跳过
+                if c.thumbnail_path.is_some() { continue; }
+                // 每个课程单独拿锁，避免长时间阻塞 UI
+                let conn = db_for_thumbs.lock().unwrap_or_else(|e| e.into_inner());
+                match deskemy_core::courses::ensure_thumbnail(&conn, &c.id, thumbs_dir_ref) {
+                    Ok(true) => {
+                        generated += 1;
+                        tracing::info!(course = %c.title, "auto-generated thumbnail");
+                    }
+                    Ok(false) => {}
+                    Err(e) => tracing::warn!(course = %c.title, error = %e, "thumbnail gen failed"),
+                }
+            }
+            if generated > 0 {
+                tracing::info!(generated, "thumbnail generation done");
+            }
+        });
+    }
+
+    // ---- 后台压缩封面：指向课程文件夹原图的超大封面换成缓存里的小图 ----
+    // An oversized cover (a course folder's own poster) decodes on the UI
+    // thread every time its card scrolls into view and stalls scrolling.
+    {
+        let thumbs_dir = thumbs.clone();
+        let db_for_covers = db.clone();
+        let weak = ui.as_weak();
+        std::thread::spawn(move || {
+            let Some(thumbs_dir) = thumbs_dir else { return };
+            match deskemy_core::courses::cache_covers(&db_for_covers, &thumbs_dir) {
+                Ok(0) => {}
+                Ok(n) => {
+                    tracing::info!(courses = n, "oversized covers cached");
+                    let _ = slint::invoke_from_event_loop(move || {
+                        if let Some(ui) = weak.upgrade() {
+                            ui.invoke_refresh_library();
+                        }
+                    });
+                }
+                Err(e) => tracing::warn!(error = %e, "cover caching failed"),
+            }
+        });
+    }
     let course = course_page::CoursePage::new(db.clone(), config.clone(), thumbs);
     let tracks = career::TracksPage::new(db.clone(), library.clone());
 
@@ -197,7 +252,7 @@ fn main() -> Result<(), slint::PlatformError> {
         // loop here) and shows Settings with its result.
         if let Some(key) = page.as_deref().and_then(|p| p.strip_prefix("settings-run:")) {
             ui.global::<Nav>().set_page("settings".into());
-            ui.global::<Nav>().set_crumbs(course_panel::model(vec!["Settings".into()]));
+            ui.global::<Nav>().set_crumbs(course_panel::model(vec!["设置".into()]));
             let message = settings::run_task(key, &db, paths::data_dir().as_deref());
             ui.global::<Prefs>().invoke_set_result(key.into(), message.into());
             prefs.show_storage(&ui);
@@ -276,18 +331,18 @@ fn main() -> Result<(), slint::PlatformError> {
             updates.set_progress(42);
             let name = rest.trim_end_matches("-downloading");
             ui.global::<Nav>().set_page(name.into());
-            ui.global::<Nav>().set_crumbs(course_panel::model(vec![if name == "settings" { "Settings" } else { "Library" }.into()]));
+            ui.global::<Nav>().set_crumbs(course_panel::model(vec![if name == "settings" { "设置" } else { "课程库" }.into()]));
         }
         // "settings-import": Settings with the import confirmation open.
         if page.as_deref() == Some("settings-import") {
             ui.global::<Nav>().set_page("settings".into());
-            ui.global::<Nav>().set_crumbs(course_panel::model(vec!["Settings".into()]));
+            ui.global::<Nav>().set_crumbs(course_panel::model(vec!["设置".into()]));
             ui.global::<Prefs>().set_import_confirm(true);
         }
         // "search:<query>" shows the search page with that query's results.
         if let Some(query) = page.as_deref().and_then(|p| p.strip_prefix("search:")) {
             ui.global::<Nav>().set_page("search".into());
-            ui.global::<Nav>().set_crumbs(course_panel::model(vec!["Search".into()]));
+            ui.global::<Nav>().set_crumbs(course_panel::model(vec!["搜索".into()]));
             ui.global::<Search>().set_query(query.into());
             search::run(&ui, &db, query);
         }
@@ -725,7 +780,7 @@ fn wire_course(
             ui.global::<Library>().set_scroll_y(0.0);
             let nav = ui.global::<Nav>();
             nav.set_page("library".into());
-            nav.set_crumbs(course_panel::model(vec!["Library".into()]));
+            nav.set_crumbs(course_panel::model(vec!["课程库".into()]));
             nav.set_crumb_targets(course_panel::model(vec!["".into()]));
             ui.invoke_refresh_library();
         }
@@ -1151,7 +1206,7 @@ fn open_library(ui: &AppWindow) -> (Db, settings::Config) {
         }
         Some(Err(e)) => {
             tracing::error!(error = %e, "could not open library");
-            ui.global::<Library>().set_status_text(format!("Could not open the library: {e}").into());
+            ui.global::<Library>().set_status_text(format!("无法打开课程库：{e}").into());
             None
         }
         None => {

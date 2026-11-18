@@ -142,7 +142,7 @@ fn same_dir(a: &Path, b: &Path) -> bool {
 /// `check` against a given endpoint and key, as `current`, reading the
 /// manifest's `target` entry (None: the platform's default).
 pub fn check_with(endpoint: &str, pubkey: &str, current: &str, target: Option<&str>) -> Result<Option<Update>, String> {
-    let url = endpoint.parse().map_err(|e| format!("update endpoint: {e}"))?;
+    let url = endpoint.parse().map_err(|e| format!("更新服务地址：{e}"))?;
     let current = Version::parse(current).map_err(|e| e.to_string())?;
     let config = Config {
         endpoints: vec![url],
@@ -182,10 +182,10 @@ pub fn download(update: &Update, progress: impl Fn(u64, Option<u64>)) -> Result<
 /// Download the update and check its signature.
 fn fetch(update: &Update, progress: impl Fn(u64, Option<u64>)) -> Result<Vec<u8>, String> {
     if cfg!(target_os = "linux") && !matches!(update.format, UpdateFormat::AppImage) {
-        return Err(format!("this build installs AppImage updates, not {}", update.format));
+        return Err(format!("此版本安装 AppImage 更新，而不是 {}", update.format));
     }
     if cfg!(windows) && !matches!(update.format, UpdateFormat::Nsis | UpdateFormat::Wix) {
-        return Err(format!("this build installs .exe or .msi updates, not {}", update.format));
+        return Err(format!("此版本安装 .exe 或 .msi 更新，而不是 {}", update.format));
     }
     let received = std::cell::Cell::new(0u64);
     update
@@ -214,7 +214,7 @@ fn save(update: &Update, bytes: &[u8]) -> Result<PathBuf, String> {
 /// writable), ready to be renamed over it.
 #[cfg(target_os = "linux")]
 fn save(_update: &Update, bytes: &[u8]) -> Result<PathBuf, String> {
-    let current = appimage().ok_or("not running from an AppImage")?;
+    let current = appimage().ok_or("当前不是从 AppImage 运行的")?;
     stage(&current, bytes).map_err(|e| format!("{}: {e}", staged_path(&current).display()))
 }
 
@@ -290,8 +290,8 @@ pub fn verify(data: &[u8], signature: &str, pubkey: &str) -> Result<(), String> 
         let bytes = base64::engine::general_purpose::STANDARD.decode(b64.trim()).map_err(|e| e.to_string())?;
         String::from_utf8(bytes).map_err(|e| e.to_string())
     };
-    let key = minisign_verify::PublicKey::decode(&text(pubkey)?).map_err(|e| format!("public key: {e}"))?;
-    let sig = minisign_verify::Signature::decode(&text(signature)?).map_err(|e| format!("signature: {e}"))?;
+    let key = minisign_verify::PublicKey::decode(&text(pubkey)?).map_err(|e| format!("公钥：{e}"))?;
+    let sig = minisign_verify::Signature::decode(&text(signature)?).map_err(|e| format!("签名：{e}"))?;
     key.verify(data, &sig, true).map_err(|e| e.to_string())
 }
 
@@ -332,7 +332,7 @@ pub fn run_installer(path: &Path) -> std::io::Result<()> {
 /// with the update, or as it was if it couldn't be put in place.
 #[cfg(target_os = "linux")]
 pub fn run_installer(staged: &Path) -> std::io::Result<()> {
-    let current = appimage().ok_or_else(|| std::io::Error::other("not running from an AppImage"))?;
+    let current = appimage().ok_or_else(|| std::io::Error::other("当前不是从 AppImage 运行的"))?;
     let placed = put_in_place(staged, &current);
     std::process::Command::new(&current).spawn()?;
     placed
@@ -352,7 +352,7 @@ fn put_in_place(staged: &Path, current: &Path) -> std::io::Result<()> {
 
 #[cfg(not(any(windows, target_os = "linux")))]
 pub fn run_installer(_path: &Path) -> std::io::Result<()> {
-    Err(std::io::Error::other("updates install on Windows and Linux only"))
+    Err(std::io::Error::other("仅支持在 Windows 和 Linux 上安装更新"))
 }
 
 /// The update flow: the update found by the last check.

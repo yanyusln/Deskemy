@@ -18,12 +18,12 @@ fn local(unix: i64) -> DateTime<Local> {
     DateTime::from_timestamp(unix, 0).unwrap_or_default().with_timezone(&Local)
 }
 
-/// "Today", "Yesterday", else e.g. "Tue, Sep 23, 2026" — as `formatDayGroup`.
+/// "今天", "昨天", else e.g. "2026年9月23日" — as `formatDayGroup`.
 pub fn day_group(day: NaiveDate, today: NaiveDate) -> String {
     match (today - day).num_days() {
-        ..=0 => "Today".into(),
-        1 => "Yesterday".into(),
-        _ => day.format("%a, %b %-d, %Y").to_string(),
+        ..=0 => "今天".into(),
+        1 => "昨天".into(),
+        _ => day.format("%Y年%-m月%-d日").to_string(),
     }
 }
 
@@ -149,9 +149,9 @@ mod tests {
     #[test]
     fn day_groups_read_like_the_tauri_app() {
         let today = NaiveDate::from_ymd_opt(2026, 9, 25).unwrap();
-        assert_eq!(day_group(today, today), "Today");
-        assert_eq!(day_group(today.pred_opt().unwrap(), today), "Yesterday");
-        assert_eq!(day_group(NaiveDate::from_ymd_opt(2026, 9, 1).unwrap(), today), "Tue, Sep 1, 2026");
+        assert_eq!(day_group(today, today), "今天");
+        assert_eq!(day_group(today.pred_opt().unwrap(), today), "昨天");
+        assert_eq!(day_group(NaiveDate::from_ymd_opt(2026, 9, 1).unwrap(), today), "2026年9月1日");
     }
 
     #[test]
@@ -172,7 +172,7 @@ mod tests {
             .into_iter()
             .map(|(l, e)| (l, e.into_iter().map(|h| h.lecture_id.as_str()).collect()))
             .collect();
-        assert_eq!(groups[0], ("Today".to_string(), vec!["a", "b"]));
+        assert_eq!(groups[0], ("今天".to_string(), vec!["a", "b"]));
         assert_eq!(groups[1].1, vec!["c"]);
     }
 

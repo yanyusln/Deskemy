@@ -6,35 +6,35 @@ use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 #[derive(Debug, thiserror::Error)]
 pub enum DeskemyError {
-    #[error("io error: {0}")]
+    #[error("IO 错误：{0}")]
     Io(#[from] std::io::Error),
 
-    #[error("database error: {0}")]
+    #[error("数据库错误：{0}")]
     Database(#[from] rusqlite::Error),
 
-    #[error("serialization error: {0}")]
+    #[error("序列化错误：{0}")]
     Serde(#[from] serde_json::Error),
 
-    #[error("archive error: {0}")]
+    #[error("压缩包错误：{0}")]
     Archive(#[from] zip::result::ZipError),
 
-    #[error("config error: {0}")]
+    #[error("配置错误：{0}")]
     Config(String),
 
-    #[error("import error: {0}")]
+    #[error("导入错误：{0}")]
     Import(String),
 
-    #[error("probe error: {0}")]
+    #[error("解析错误：{0}")]
     Probe(String),
 
-    #[error("player error: {0}")]
+    #[error("播放器错误：{0}")]
     Player(String),
 
     /// A libmpv call that failed, with mpv's error code (`MPV_ERROR_*`).
-    #[error("player error: mpv error code {0}")]
+    #[error("播放器错误：mpv 错误代码 {0}")]
     Mpv(i32),
 
-    #[error("not found: {0}")]
+    #[error("未找到：{0}")]
     NotFound(String),
 
     #[error("{0}")]

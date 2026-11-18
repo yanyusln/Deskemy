@@ -73,7 +73,7 @@ component PanelTick inherits Rectangle {
     in property <ResourceItem> item;
     width: 15px;
     accessible-role: button;
-    accessible-label: root.item.done ? "Mark as not done" : "Mark as done";
+    accessible-label: root.item.done ? "标记为未完成" : "标记为已完成";
     Image {
         source: root.item.done ? @image-url("icons/circle-check.svg") : @image-url("icons/circle.svg");
         width: 15px;
@@ -129,7 +129,13 @@ component ResourceEntry inherits Rectangle {
             overflow: elide;
         }
         Text {
-            text: root.item.kind;
+            text: root.item.kind == "pdf" ? "PDF"
+                : root.item.kind == "text" ? "文本"
+                : root.item.kind == "archive" ? "压缩包"
+                : root.item.kind == "folder" ? "文件夹"
+                : root.item.kind == "link" ? "链接"
+                : root.item.kind == "code" ? "代码"
+                : root.item.kind == "html" ? "网页" : "文件";
             color: #ffffff80;
             font-size: 11px;
             font-weight: 600;
@@ -158,13 +164,13 @@ export component CoursePanel inherits Rectangle {
 
             Tab {
                 y: 9px;
-                text: "Content";
+                text: "目录";
                 selected: Playback.panel-tab == "content";
                 clicked => { Playback.panel-tab = "content"; }
             }
             Tab {
                 y: 9px;
-                text: Playback.resources-count > 0 ? "Resources · " + Playback.resources-count : "Resources";
+                text: Playback.resources-count > 0 ? "资源 · " + Playback.resources-count : "资源";
                 selected: Playback.panel-tab == "resources";
                 clicked => { Playback.panel-tab = "resources"; }
             }
@@ -258,7 +264,7 @@ export component CoursePanel inherits Rectangle {
                     padding: 14px;
                     padding-bottom: 6px;
                     Text {
-                        text: "Resources in " + Playback.resources-section;
+                        text: Playback.resources-section + " 的资源";
                         color: #ffffff99;
                         font-size: 12px;
                         overflow: elide;
@@ -267,7 +273,7 @@ export component CoursePanel inherits Rectangle {
                 if Playback.panel-resources.length == 0: HorizontalLayout {
                     padding: 14px;
                     Text {
-                        text: "No resources in this section.";
+                        text: "本章节没有资源。";
                         color: #ffffff80;
                         font-size: 13px;
                     }

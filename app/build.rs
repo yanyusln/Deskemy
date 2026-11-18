@@ -1,6 +1,17 @@
 use std::{env, fs, path::PathBuf};
 
 fn main() {
+    // 显式声明所有 .slint 文件的依赖，确保任何一个变化都触发重新编译
+    for f in &[
+        "ui/app.slint", "ui/library.slint", "ui/player.slint",
+        "ui/course.slint", "ui/settings.slint", "ui/search.slint",
+        "ui/theme.slint", "ui/pages.slint", "ui/shell.slint",
+        "ui/stats_page.slint", "ui/import.slint", "ui/pdf.slint",
+        "ui/mini.slint", "ui/course_panel.slint", "ui/updates.slint",
+        "ui/career.slint",
+    ] {
+        println!("cargo:rerun-if-changed={}", f);
+    }
     slint_build::compile("ui/app.slint").expect("compile .slint UI");
 
     // Windows: embed the icon and version info in the exe, so Explorer,
@@ -45,7 +56,7 @@ fn main() {
     // Linux uses the system's libmpv. (The target's OS, not the build
     // machine's.)
     let staged: &[&str] = match env::var("CARGO_CFG_TARGET_OS").as_deref() {
-        Ok("windows") => &["libmpv-2.dll", "pdfium.dll"],
+        Ok("windows") => &["libmpv-2.dll", "pdfium.dll", "ffmpeg.exe"],
         Ok("linux") => &["libpdfium.so"],
         _ => &[],
     };

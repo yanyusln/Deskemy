@@ -65,7 +65,7 @@ pub fn heatmap(today: NaiveDate, activity: &[DayActivity]) -> Vec<Option<Day>> {
 
 /// The last seven days, oldest first, with their weekday initials.
 pub fn week(today: NaiveDate, activity: &[DayActivity]) -> Vec<(&'static str, Day)> {
-    const INITIALS: [&str; 7] = ["S", "M", "T", "W", "T", "F", "S"];
+    const INITIALS: [&str; 7] = ["日", "一", "二", "三", "四", "五", "六"];
     let days = Days::new(activity);
     (0..7)
         .rev()
@@ -76,21 +76,21 @@ pub fn week(today: NaiveDate, activity: &[DayActivity]) -> Vec<(&'static str, Da
         .collect()
 }
 
-/// A day's hover text: what was done ("1h 5m watched · 2 lectures") and when
-/// ("Mon, Sep 28", with the year when it isn't this one).
+/// A day's hover text: what was done ("观看 1 小时 5 分钟 · 2 个课时") and when
+/// ("9月28日", with the year when it isn't this one).
 pub fn tip(day: &Day, today: NaiveDate) -> (String, String) {
     let mut done = Vec::new();
     if day.seconds >= 1.0 {
-        done.push(format!("{} watched", format_duration(Some(day.seconds))));
+        done.push(format!("观看 {}", format_duration(Some(day.seconds))));
     }
     if day.lectures > 0 {
-        done.push(format!("{} {}", day.lectures, if day.lectures == 1 { "lecture" } else { "lectures" }));
+        done.push(format!("{} 个课时", day.lectures));
     }
-    let what = if done.is_empty() { "Nothing watched".to_string() } else { done.join(" · ") };
+    let what = if done.is_empty() { "未观看".to_string() } else { done.join(" · ") };
     let when = if day.date.year() == today.year() {
-        day.date.format("%a, %b %-d").to_string()
+        day.date.format("%-m月%-d日").to_string()
     } else {
-        day.date.format("%a, %b %-d, %Y").to_string()
+        day.date.format("%Y年%-m月%-d日").to_string()
     };
     (what, when)
 }
@@ -131,8 +131,8 @@ pub fn ring(percent: i32) -> String {
     format!("M {C} {} A {R} {R} 0 {large} 1 {x:.2} {y:.2}", C - R)
 }
 
-fn days(n: i64) -> &'static str {
-    if n == 1 { "day" } else { "days" }
+fn days(_n: i64) -> &'static str {
+    "天"
 }
 
 /// Load the stats and show them.
@@ -158,7 +158,7 @@ pub fn show(ui: &AppWindow, db: &Db, goal_minutes: i64) {
     let goal = goal_percent(today_minutes, stats.daily_goal_minutes);
     page.set_goal_percent(goal);
     page.set_goal_ring(ring(goal).into());
-    page.set_goal_text(format!("{today_minutes} / {} min", stats.daily_goal_minutes).into());
+    page.set_goal_text(format!("{today_minutes} / {} 分钟", stats.daily_goal_minutes).into());
     page.set_streak(stats.current_streak as i32);
     page.set_streak_unit(days(stats.current_streak).into());
     page.set_best_streak(stats.best_streak as i32);
@@ -251,7 +251,7 @@ mod tests {
         let today = date("2026-09-25");
         let w = week(today, &[day("2026-09-25", 10.0), day("2026-09-19", 2.0)]);
         let labels: Vec<&str> = w.iter().map(|(l, _)| *l).collect();
-        assert_eq!(labels, ["S", "S", "M", "T", "W", "T", "F"]);
+        assert_eq!(labels, ["六", "日", "一", "二", "三", "四", "五"]);
         assert_eq!(w[0].1.seconds, 120.0);
         assert_eq!(w[6].1.seconds, 600.0);
         assert_eq!(w[6].1.date, today);
@@ -261,11 +261,11 @@ mod tests {
     fn tips_say_what_was_done_and_when() {
         let today = date("2026-09-28");
         let on = |d: &str, seconds: f64, lectures: i64| tip(&Day { date: date(d), seconds, lectures }, today);
-        assert_eq!(on("2026-09-28", 3900.0, 2), ("1h 5m watched · 2 lectures".into(), "Mon, Sep 28".into()));
-        assert_eq!(on("2026-09-27", 45.0 * 60.0, 1), ("45m watched · 1 lecture".into(), "Sun, Sep 27".into()));
-        assert_eq!(on("2026-09-26", 0.0, 0).0, "Nothing watched");
-        assert_eq!(on("2026-09-26", 0.0, 3).0, "3 lectures");
-        assert_eq!(on("2025-12-31", 30.0, 0), ("30s watched".into(), "Wed, Dec 31, 2025".into()));
+        assert_eq!(on("2026-09-28", 3900.0, 2), ("观看 1 小时 5 分钟 · 2 个课时".into(), "9月28日".into()));
+        assert_eq!(on("2026-09-27", 45.0 * 60.0, 1), ("观看 45 分钟 · 1 个课时".into(), "9月27日".into()));
+        assert_eq!(on("2026-09-26", 0.0, 0).0, "未观看");
+        assert_eq!(on("2026-09-26", 0.0, 3).0, "3 个课时");
+        assert_eq!(on("2025-12-31", 30.0, 0), ("观看 30 秒".into(), "2025年12月31日".into()));
     }
 
     #[test]

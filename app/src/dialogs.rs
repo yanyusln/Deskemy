@@ -59,7 +59,7 @@ fn no_file_chooser() -> Option<String> {
     if has_backend {
         return None;
     }
-    Some("No file dialog here: install xdg-desktop-portal-gtk (or -kde), or zenity.".into())
+    Some("无法打开文件选择器：请安装 xdg-desktop-portal-gtk（或 -kde），或 zenity。".into())
 }
 
 #[cfg(not(target_os = "linux"))]
@@ -90,7 +90,7 @@ fn unavailable() -> Option<String> {
         "no session bus for the file chooser portal (DBUS_SESSION_BUS_ADDRESS / XDG_RUNTIME_DIR) and no zenity"
     );
     // Short: the sidebar shows two lines of it.
-    Some("No file dialog here: it needs a desktop session (D-Bus) or zenity.".into())
+    Some("无法打开文件选择器：需要桌面会话（D-Bus）或 zenity。".into())
 }
 
 #[cfg(not(target_os = "linux"))]

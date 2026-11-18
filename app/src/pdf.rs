@@ -508,7 +508,7 @@ fn run(shared: &Shared, viewer: ViewerHandle) {
                         doc = Some((generation, d));
                         aspects
                     }),
-                    Err(e) => Err(format!("The PDF viewer couldn't start ({e}). Open it in your PDF app instead.")),
+                    Err(e) => Err(format!("PDF 阅读器无法启动（{e}）。请改用系统 PDF 应用打开。")),
                 };
                 if let Err(e) = &result {
                     tracing::warn!(path = %path.display(), error = %e, "open pdf");
@@ -533,7 +533,7 @@ fn run(shared: &Shared, viewer: ViewerHandle) {
 /// Load PDFium (once per process).
 fn bind() -> Result<pdfium_render::prelude::Pdfium, String> {
     use pdfium_render::prelude::Pdfium;
-    let path = library().ok_or("PDFium wasn't found")?;
+    let path = library().ok_or("未找到 PDFium")?;
     let bindings = Pdfium::bind_to_library(&path).map_err(|e| format!("{}: {e}", path.display()))?;
     Ok(Pdfium::new(bindings))
 }
@@ -546,7 +546,7 @@ fn load<'a>(
     let doc = pdfium.load_pdf_from_file(path, None).map_err(|e| describe(&e))?;
     let sizes = doc.pages().page_sizes().map_err(|e| describe(&e))?;
     if sizes.is_empty() {
-        return Err("This PDF has no pages.".into());
+        return Err("这个 PDF 没有页面。".into());
     }
     let aspects = sizes.iter().map(|s| s.height().value / s.width().value.max(1.0)).collect();
     Ok((doc, aspects))
@@ -657,13 +657,13 @@ fn describe(e: &pdfium_render::prelude::PdfiumError) -> String {
     use pdfium_render::prelude::{PdfiumError, PdfiumInternalError};
     match e {
         PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::PasswordError) => {
-            "This PDF needs a password. Open it in your PDF app instead.".into()
+            "这个 PDF 需要密码。请改用系统 PDF 应用打开。".into()
         }
-        PdfiumError::IoError(e) => format!("The file couldn't be read: {e}"),
+        PdfiumError::IoError(e) => format!("无法读取文件：{e}"),
         PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::FormatError) => {
-            "This file doesn't look like a PDF (or it's damaged).".into()
+            "该文件不是 PDF，或已损坏。".into()
         }
-        e => format!("This PDF couldn't be opened ({e})."),
+        e => format!("无法打开这个 PDF（{e}）。"),
     }
 }
 
@@ -723,8 +723,8 @@ mod tests {
         // Not a PDF, or not there: said plainly.
         let junk = tmp.path().join("junk.pdf");
         std::fs::write(&junk, "hello").unwrap();
-        assert!(load(&pdfium, &junk).unwrap_err().contains("doesn't look like a PDF"));
-        assert!(load(&pdfium, &tmp.path().join("gone.pdf")).unwrap_err().starts_with("The file couldn't be read"));
+        assert!(load(&pdfium, &junk).unwrap_err().contains("不是 PDF"));
+        assert!(load(&pdfium, &tmp.path().join("gone.pdf")).unwrap_err().starts_with("无法读取文件"));
     }
 
     /// Two 200x100 pages. Page 1's links: its top left quarter to a web page,

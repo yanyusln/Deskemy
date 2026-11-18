@@ -76,20 +76,20 @@ pub fn sample_playback(ui: &crate::AppWindow, menu: &str, db: &crate::session::D
     // Playback info as it looks for a typical course lecture.
     let line = |label, value: &str| (label, value.to_string());
     let groups: crate::stats::Groups = vec![
-        ("Video", vec![line("Codec", "H.264"), line("Resolution", "1920x1080"), line("FPS", "30.00"),
-            line("Bitrate", "1.9 Mbps"), line("Decoder", "d3d11va-copy")]),
-        ("Audio", vec![line("Codec", "AAC"), line("Sample rate", "48.0 kHz"), line("Channels", "2"),
-            line("Bitrate", "128 kbps")]),
-        ("Color", vec![line("Pixel format", "nv12"), line("HW format", "d3d11"), line("Matrix", "bt.709"),
-            line("Primaries", "bt.709"), line("Transfer", "bt.1886")]),
-        ("Performance", vec![line("Render FPS", "30.00"), line("A/V sync", "0ms"), line("Dropped", "0")]),
-        ("Buffer", vec![line("Cached", "142.3s"), line("Speed", "3.1 MB/s")]),
-        ("App", vec![line("Player", "mpv v0.40.0"), line("Renderer", "Slint · OpenGL")]),
+        ("视频", vec![line("编码", "H.264"), line("分辨率", "1920x1080"), line("帧率", "30.00"),
+            line("码率", "1.9 Mbps"), line("解码器", "d3d11va-copy")]),
+        ("音频", vec![line("编码", "AAC"), line("采样率", "48.0 kHz"), line("声道", "2"),
+            line("码率", "128 kbps")]),
+        ("色彩", vec![line("像素格式", "nv12"), line("硬件格式", "d3d11"), line("矩阵", "bt.709"),
+            line("原色", "bt.709"), line("传输特性", "bt.1886")]),
+        ("性能", vec![line("渲染帧率", "30.00"), line("音画同步", "0ms"), line("丢帧", "0")]),
+        ("缓冲", vec![line("已缓存", "142.3s"), line("速度", "3.1 MB/s")]),
+        ("应用", vec![line("播放器", "mpv v0.40.0"), line("渲染器", "Slint · OpenGL")]),
     ];
     playback.set_stats(crate::course_panel::model(crate::stats::rows(groups)));
     playback.set_stats_open(menu == "stats");
     playback.set_clock("00:32".into());
-    playback.set_ends_at("Ends at 00:35".into());
+    playback.set_ends_at("结束于 00:35".into());
     playback.set_position(54.0);
     playback.set_duration(202.0);
     playback.set_paused(true);
@@ -208,7 +208,7 @@ pub fn sample_tracks(ui: &crate::AppWindow, page: &crate::career::TracksPage, wh
     }
     if let Some(dialog) = which.strip_prefix("tracks") {
         nav.set_page("tracks".into());
-        nav.set_crumbs(crate::course_panel::model(vec!["Career Tracks".into()]));
+        nav.set_crumbs(crate::course_panel::model(vec!["职业路线".into()]));
         page.show_list(ui);
         ui.global::<Tracks>().set_dialog(dialog.trim_start_matches('-').into());
         return;
@@ -255,10 +255,10 @@ pub fn sample_batch(ui: &crate::AppWindow, running: bool) {
         status: if running { status.into() } else { "".into() },
     };
     let rows = vec![
-        row("01 Rust Programming The Complete Developer's Guide", false, 2, "Imported · 212 lectures"),
+        row("01 Rust Programming The Complete Developer's Guide", false, 2, "已导入 · 212 个课时"),
         row("02 Docker and Kubernetes", true, 0, ""),
-        row("03 The Complete SQL Bootcamp", false, 3, "No playable video files found in D:\\Courses\\03 The Complete SQL Bootcamp."),
-        row("04 Linux Command Line Basics", false, 1, "Probing 7/42"),
+        row("03 The Complete SQL Bootcamp", false, 3, "在 D:\\Courses\\03 The Complete SQL Bootcamp 中未找到可播放的视频文件。"),
+        row("04 Linux Command Line Basics", false, 1, "解析中 7/42"),
         row("05 Go - The Complete Guide", false, 0, ""),
     ];
     let import = ui.global::<crate::Import>();

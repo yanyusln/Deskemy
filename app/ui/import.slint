@@ -78,7 +78,7 @@ export component AddFolderButton inherits Rectangle {
     background: root.active && touch.has-hover ? Theme.inverse-primary : Theme.primary-container;
     opacity: root.active ? 1 : 0.6;
     accessible-role: button;
-    accessible-label: Import.batch-running ? "Show the import" : "Add Folder";
+    accessible-label: Import.batch-running ? "显示导入进度" : "添加文件夹";
     accessible-enabled: root.active;
     accessible-action-default => { Import.add-folder(); }
 
@@ -94,7 +94,7 @@ export component AddFolderButton inherits Rectangle {
             transform-rotation: root.busy ? animation-tick() / 1s * 360deg : 0deg;
         }
         if !root.collapsed: Text {
-            text: Import.scanning || Import.batch-running ? Import.progress : Import.importing ? "Importing…" : "Add Folder";
+            text: Import.scanning || Import.batch-running ? Import.progress : Import.importing ? "导入中…" : "添加文件夹";
             color: Theme.on-primary-container;
             font-size: Theme.label-md;
             font-weight: 600;
@@ -224,7 +224,7 @@ export component ImportDialog inherits Rectangle {
                                 horizontal-stretch: 1;
                                 spacing: 2px;
                                 Text {
-                                    text: "Import course";
+                                    text: "导入课程";
                                     color: Theme.on-surface-variant;
                                     font-size: Theme.label-sm;
                                 }
@@ -243,7 +243,7 @@ export component ImportDialog inherits Rectangle {
                                 background: close.has-hover && !Import.importing ? Theme.surface-container-highest : transparent;
                                 opacity: Import.importing ? 0.5 : 1;
                                 accessible-role: button;
-                                accessible-label: "Cancel";
+                                accessible-label: "取消";
                                 Image {
                                     source: @image-url("icons/x.svg");
                                     width: 18px;
@@ -269,7 +269,7 @@ export component ImportDialog inherits Rectangle {
                                 padding-left: 12px;
                                 padding-right: 12px;
                                 Text {
-                                    text: "Already in your library — re-importing keeps your progress, bookmarks and tags.";
+                                    text: "已在课程库中 — 重新导入会保留进度、书签和标签。";
                                     color: Theme.secondary-container;
                                     font-size: Theme.label-sm;
                                     wrap: word-wrap;
@@ -286,13 +286,13 @@ export component ImportDialog inherits Rectangle {
                                     horizontal-stretch: 1;
                                     icon: @image-url("icons/layers.svg");
                                     value: Import.sections;
-                                    label: "sections";
+                                    label: "章节";
                                 }
                                 Count {
                                     horizontal-stretch: 1;
                                     icon: @image-url("icons/video.svg");
                                     value: Import.lectures;
-                                    label: "lectures";
+                                    label: "课时";
                                 }
                             }
                             HorizontalLayout {
@@ -301,13 +301,13 @@ export component ImportDialog inherits Rectangle {
                                     horizontal-stretch: 1;
                                     icon: @image-url("icons/paperclip.svg");
                                     value: Import.resources;
-                                    label: "resources";
+                                    label: "资源";
                                 }
                                 Count {
                                     horizontal-stretch: 1;
                                     icon: @image-url("icons/captions.svg");
                                     value: Import.subtitles;
-                                    label: "subtitles";
+                                    label: "字幕";
                                 }
                             }
                         }
@@ -346,12 +346,12 @@ export component ImportDialog inherits Rectangle {
                             alignment: end;
                             spacing: 8px;
                             Button {
-                                text: "Cancel";
+                                text: "取消";
                                 active: !Import.importing;
                                 clicked => { Import.cancel(); }
                             }
                             Button {
-                                text: Import.reimport ? "Re-import" : "Import";
+                                text: Import.reimport ? "重新导入" : "导入";
                                 primary: true;
                                 active: !Import.importing;
                                 spinning: Import.importing;
@@ -373,7 +373,7 @@ component BatchRow inherits Rectangle {
     // Left out of this run.
     property <bool> dimmed: !root.editable && !root.course.selected;
     property <string> detail: root.course.status != "" ? root.course.status
-        : root.course.in-library && !root.dimmed ? "In your library — re-importing keeps your progress" : "";
+        : root.course.in-library && !root.dimmed ? "已在课程库中 — 重新导入会保留进度" : "";
 
     height: 44px;
     border-radius: 8px;
@@ -482,9 +482,9 @@ export component BatchDialog inherits Rectangle {
                                 horizontal-stretch: 1;
                                 spacing: 2px;
                                 Text {
-                                    text: Import.batch-done ? "Import finished"
-                                        : Import.batch-running ? "Importing \{Import.batch-selected} courses"
-                                        : "\{Import.batch.length} courses found in";
+                                    text: Import.batch-done ? "导入完成"
+                                        : Import.batch-running ? "正在导入 \{Import.batch-selected} 门课程"
+                                        : "在此找到 \{Import.batch.length} 门课程：";
                                     color: Theme.on-surface-variant;
                                     font-size: Theme.label-sm;
                                 }
@@ -502,7 +502,7 @@ export component BatchDialog inherits Rectangle {
                                 border-radius: 6px;
                                 background: close.has-hover ? Theme.surface-container-highest : transparent;
                                 accessible-role: button;
-                                accessible-label: Import.batch-running ? "Hide" : "Close";
+                                accessible-label: Import.batch-running ? "隐藏" : "关闭";
                                 accessible-action-default => { Import.batch-close(); }
                                 Image {
                                     source: @image-url("icons/x.svg");
@@ -535,7 +535,7 @@ export component BatchDialog inherits Rectangle {
                         if Import.batch-one-folder && root.editable: HorizontalLayout {
                             alignment: start;
                             Text {
-                                text: "Or import “\{Import.batch-source}” as one course";
+                                text: "或将“\{Import.batch-source}”作为一门课程导入";
                                 color: as-one.has-hover ? Theme.on-surface : Theme.primary;
                                 font-size: Theme.label-md;
                                 font-weight: 600;
@@ -562,27 +562,27 @@ export component BatchDialog inherits Rectangle {
                             alignment: end;
                             spacing: 8px;
                             if root.editable: Button {
-                                text: "Cancel";
+                                text: "取消";
                                 clicked => { Import.batch-close(); }
                             }
                             if root.editable: Button {
-                                text: Import.batch-selected == 1 ? "Import 1 course" : "Import \{Import.batch-selected} courses";
+                                text: Import.batch-selected == 1 ? "导入 1 门课程" : "导入 \{Import.batch-selected} 门课程";
                                 primary: true;
                                 active: Import.batch-selected > 0;
                                 clicked => { Import.batch-confirm(); }
                             }
                             if Import.batch-running: Button {
-                                text: "Hide";
+                                text: "隐藏";
                                 clicked => { Import.batch-close(); }
                             }
                             if Import.batch-running: Button {
-                                text: Import.batch-stopping ? "Stopping…" : "Stop";
+                                text: Import.batch-stopping ? "正在停止…" : "停止";
                                 active: !Import.batch-stopping;
                                 spinning: Import.batch-stopping;
                                 clicked => { Import.batch-stop(); }
                             }
                             if Import.batch-done: Button {
-                                text: "Done";
+                                text: "完成";
                                 primary: true;
                                 clicked => { Import.batch-close(); }
                             }
@@ -619,14 +619,14 @@ export component DropOverlay inherits Rectangle {
                 }
             }
             Text {
-                text: "Drop to import";
+                text: "拖放到此处导入";
                 color: Theme.on-surface;
                 font-size: Theme.headline-md;
                 font-weight: 600;
                 horizontal-alignment: center;
             }
             Text {
-                text: "A course folder, a folder of courses, or several at once";
+                text: "课程文件夹、包含多门课程的文件夹，或一次拖入多个";
                 color: Theme.on-surface-variant;
                 font-size: Theme.body-md;
                 horizontal-alignment: center;

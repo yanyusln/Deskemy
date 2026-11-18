@@ -176,7 +176,7 @@ component TagChip inherits Rectangle {
             border-radius: 8px;
             background: x-touch.has-hover ? Theme.surface-container-highest : transparent;
             accessible-role: button;
-            accessible-label: "Remove tag " + root.text;
+            accessible-label: "移除标签 " + root.text;
             Image {
                 source: @image-url("icons/x.svg");
                 width: 12px;
@@ -212,7 +212,7 @@ component LectureRow inherits Rectangle {
         Rectangle {
             width: 18px;
             accessible-role: button;
-            accessible-label: root.lecture.completed ? "Mark as not done" : "Mark as done";
+            accessible-label: root.lecture.completed ? "标记为未完成" : "标记为已完成";
             Image {
                 source: root.lecture.completed ? @image-url("icons/circle-check.svg") : @image-url("icons/circle.svg");
                 width: 18px;
@@ -259,7 +259,7 @@ component LectureRow inherits Rectangle {
             border-radius: 4px;
             background: Theme.primary-container.transparentize(0.8);
             next-text := Text {
-                text: "Next up";
+                text: "接下来";
                 color: Theme.primary;
                 font-size: Theme.label-sm;
             }
@@ -274,7 +274,7 @@ component LectureRow inherits Rectangle {
                 colorize: Theme.error;
             }
             Text {
-                text: "Corrupted";
+                text: "文件损坏";
                 color: Theme.error;
                 font-size: Theme.label-sm;
                 vertical-alignment: center;
@@ -308,7 +308,7 @@ component ResourceTick inherits Rectangle {
     in property <ResourceItem> item;
     width: 18px;
     accessible-role: button;
-    accessible-label: root.item.done ? "Mark as not done" : "Mark as done";
+    accessible-label: root.item.done ? "标记为未完成" : "标记为已完成";
     Image {
         source: root.item.done ? @image-url("icons/circle-check.svg") : @image-url("icons/circle.svg");
         width: 18px;
@@ -333,7 +333,7 @@ component PairButton inherits Rectangle {
     background: touch.has-hover ? Theme.surface-container-highest : transparent;
     opacity: root.row-hover || touch.has-hover ? 1 : 0;
     accessible-role: button;
-    accessible-label: "Pair “" + root.item.name + "” with a lecture";
+    accessible-label: "将“" + root.item.name + "”与课时配对";
     accessible-action-default => { Course.pair-open(root.item.id); }
     Image {
         source: @image-url("icons/link.svg");
@@ -376,7 +376,15 @@ component CurriculumResource inherits Rectangle {
             overflow: elide;
         }
         Text {
-            text: root.item.kind == "" ? "" : root.item.kind.to-uppercase();
+            text: root.item.kind == "" ? ""
+                : root.item.kind == "pdf" ? "PDF"
+                : root.item.kind == "text" ? "文本"
+                : root.item.kind == "archive" ? "压缩包"
+                : root.item.kind == "folder" ? "文件夹"
+                : root.item.kind == "link" ? "链接"
+                : root.item.kind == "code" ? "代码"
+                : root.item.kind == "html" ? "网页"
+                : root.item.kind.to-uppercase();
             color: Theme.on-surface-variant;
             font-size: Theme.label-sm;
             vertical-alignment: center;
@@ -428,14 +436,14 @@ export component CoursePage inherits Flickable {
             padding-top: 128px;
             spacing: 12px;
             Text {
-                text: "Course not found";
+                text: "未找到课程";
                 color: Theme.on-surface;
                 font-size: Theme.headline-md;
                 font-weight: 600;
                 horizontal-alignment: center;
             }
             Text {
-                text: "It may have been removed from your library.";
+                text: "它可能已从课程库中移除。";
                 color: Theme.on-surface-variant;
                 font-size: Theme.body-sm;
                 horizontal-alignment: center;
@@ -466,13 +474,13 @@ export component CoursePage inherits Flickable {
                     spacing: 2px;
                     alignment: center;
                     Text {
-                        text: "This course's folder can't be found";
+                        text: "找不到该课程的文件夹";
                         color: Theme.on-surface;
                         font-size: Theme.body-md;
                     }
                     // max-width: see CourseDialogs — lets the banner grow to fit.
                     Text {
-                        text: "Moved or renamed the folder? Point Deskemy at its new location — your progress, bookmarks and tags are all kept.";
+                        text: "移动或重命名了文件夹？让 Deskemy 指向新位置 —— 进度、书签和标签都会保留。";
                         color: Theme.on-surface-variant;
                         font-size: Theme.label-sm;
                         wrap: word-wrap;
@@ -493,7 +501,7 @@ export component CoursePage inherits Flickable {
                     border-radius: 4px;
                     background: locate-touch.has-hover ? Theme.inverse-primary : Theme.primary-container;
                     accessible-role: button;
-                    accessible-label: "Locate folder";
+                    accessible-label: "定位文件夹";
                     locate-row := HorizontalLayout {
                         padding-left: 12px;
                         padding-right: 12px;
@@ -506,7 +514,7 @@ export component CoursePage inherits Flickable {
                             colorize: Theme.on-primary-container;
                         }
                         Text {
-                            text: "Locate folder";
+                            text: "定位文件夹";
                             color: Theme.on-primary-container;
                             font-size: Theme.label-md;
                             font-weight: 600;
@@ -542,7 +550,7 @@ export component CoursePage inherits Flickable {
                     background: Theme.surface-container-highest;
                     clip: true;
                     accessible-role: button;
-                    accessible-label: "Edit thumbnail";
+                    accessible-label: "编辑缩略图";
                     if Course.has-thumbnail: Image {
                         width: parent.width;
                         height: parent.height;
@@ -563,7 +571,7 @@ export component CoursePage inherits Flickable {
                             }
                         }
                         Text {
-                            text: "No thumbnail";
+                            text: "暂无缩略图";
                             color: Theme.outline-variant;
                             font-size: Theme.label-sm;
                             horizontal-alignment: center;
@@ -583,7 +591,7 @@ export component CoursePage inherits Flickable {
                                 colorize: #e2e2e8;
                             }
                             Text {
-                                text: "Edit";
+                                text: "编辑";
                                 color: #e2e2e8;
                                 font-size: Theme.label-md;
                                 font-weight: 600;
@@ -618,13 +626,13 @@ export component CoursePage inherits Flickable {
                             horizontal-stretch: 1;
                         }
                         IconAction {
-                            label: Course.favorite ? "Unfavorite" : "Favorite";
+                            label: Course.favorite ? "取消收藏" : "收藏";
                             icon: Course.favorite ? @image-url("icons/star-filled.svg") : @image-url("icons/star.svg");
                             tint: Course.favorite ? Theme.primary : Theme.on-surface-variant;
                             clicked => { Course.toggle-favorite(); }
                         }
                         IconAction {
-                            label: "Remove from library";
+                            label: "从课程库移除";
                             icon: @image-url("icons/trash-2.svg");
                             tint: self.hovered ? Theme.error : Theme.on-surface-variant;
                             clicked => {
@@ -661,7 +669,7 @@ export component CoursePage inherits Flickable {
                             if new-tag.text == "": Text {
                                 x: 0;
                                 height: parent.height;
-                                text: "+ tag";
+                                text: "+ 标签";
                                 color: Theme.on-surface-variant;
                                 font-size: Theme.label-sm;
                                 vertical-alignment: center;
@@ -681,7 +689,7 @@ export component CoursePage inherits Flickable {
                         // Wraps when the header is narrow (the minimum window
                         // width) instead of running into the duration.
                         Text {
-                            text: Course.done + " / " + Course.total + " lectures completed"
+                            text: "已完成 " + Course.done + " / " + Course.total + " 个课时"
                                 + (Course.resources-summary == "" ? "" : "  ·  " + Course.resources-summary);
                             color: Theme.on-surface;
                             font-size: Theme.label-md;
@@ -743,7 +751,7 @@ export component CoursePage inherits Flickable {
             spacing: 16px;
             SectionHeading {
                 icon: @image-url("icons/list-video.svg");
-                text: "Course Curriculum";
+                text: "课程目录";
             }
             VerticalLayout {
                 spacing: 8px;
@@ -833,7 +841,7 @@ export component CoursePage inherits Flickable {
             spacing: 16px;
             SectionHeading {
                 icon: @image-url("icons/paperclip.svg");
-                text: "Resources";
+                text: "资源";
             }
             for group in Course.resources: VerticalLayout {
                 spacing: 6px;
@@ -882,7 +890,14 @@ export component CoursePage inherits Flickable {
                                     overflow: elide;
                                 }
                                 Text {
-                                    text: item.kind;
+                                    text: item.kind == "" ? ""
+                                        : item.kind == "pdf" ? "PDF"
+                                        : item.kind == "text" ? "文本"
+                                        : item.kind == "archive" ? "压缩包"
+                                        : item.kind == "folder" ? "文件夹"
+                                        : item.kind == "link" ? "链接"
+                                        : item.kind == "code" ? "代码"
+                                        : item.kind == "html" ? "网页" : item.kind;
                                     color: Theme.on-surface-variant;
                                     font-size: Theme.label-sm;
                                     vertical-alignment: center;
@@ -1099,7 +1114,7 @@ export component CourseDialogs inherits Rectangle {
                     spacing: 16px;
                     HorizontalLayout {
                         Text {
-                            text: "Course thumbnail";
+                            text: "课程缩略图";
                             color: Theme.on-surface;
                             font-size: Theme.headline-sm;
                             font-weight: 600;
@@ -1112,7 +1127,7 @@ export component CourseDialogs inherits Rectangle {
                             border-radius: 6px;
                             background: close-touch.has-hover ? Theme.surface-container-highest : transparent;
                             accessible-role: button;
-                            accessible-label: "Close";
+                            accessible-label: "关闭";
                             Image {
                                 source: @image-url("icons/x.svg");
                                 width: 18px;
@@ -1152,7 +1167,7 @@ export component CourseDialogs inherits Rectangle {
                                 }
                             }
                             Text {
-                                text: "No thumbnail";
+                                text: "暂无缩略图";
                                 color: Theme.outline-variant;
                                 font-size: Theme.label-sm;
                                 horizontal-alignment: center;
@@ -1164,20 +1179,20 @@ export component CourseDialogs inherits Rectangle {
                         DialogButton {
                             horizontal-stretch: 1;
                             kind: "primary";
-                            text: "Upload image";
+                            text: "上传图片";
                             icon: @image-url("icons/image-plus.svg");
                             has-icon: true;
                             clicked => { Course.pick-cover(); }
                         }
                         if Course.has-thumbnail: DialogButton {
-                            text: "Remove";
+                            text: "移除";
                             icon: @image-url("icons/x.svg");
                             has-icon: true;
                             clicked => { Course.clear-cover(); }
                         }
                     }
                     Text {
-                        text: "Tip: copy any image and press Ctrl+V to paste it here.";
+                        text: "提示：复制任意图片，按 Ctrl+V 粘贴到这里。";
                         color: Theme.on-surface-variant;
                         font-size: Theme.label-sm;
                     }
@@ -1198,7 +1213,7 @@ export component CourseDialogs inherits Rectangle {
                             horizontal-stretch: 1;
                             spacing: 2px;
                             Text {
-                                text: "Pair with a lecture";
+                                text: "与课时配对";
                                 color: Theme.on-surface-variant;
                                 font-size: Theme.label-sm;
                             }
@@ -1216,7 +1231,7 @@ export component CourseDialogs inherits Rectangle {
                             border-radius: 6px;
                             background: pair-close.has-hover ? Theme.surface-container-highest : transparent;
                             accessible-role: button;
-                            accessible-label: "Close";
+                            accessible-label: "关闭";
                             accessible-action-default => { Course.dialog = ""; }
                             Image {
                                 source: @image-url("icons/x.svg");
@@ -1239,12 +1254,12 @@ export component CourseDialogs inherits Rectangle {
                     }
                     Field {
                         text <=> Course.pair-query;
-                        placeholder: "Filter lectures…";
+                        placeholder: "筛选课时…";
                         autofocus: true;
                         edited(query) => { Course.pair-filter(query); }
                     }
                     if Course.pair-rows.length == 0: Text {
-                        text: "No lecture matches.";
+                        text: "没有匹配的课时。";
                         color: Theme.on-surface-variant;
                         font-size: Theme.body-sm;
                         horizontal-alignment: center;
@@ -1274,12 +1289,12 @@ export component CourseDialogs inherits Rectangle {
                     HorizontalLayout {
                         spacing: 8px;
                         DialogButton {
-                            text: "With no lecture";
+                            text: "不关联课时";
                             active: !Course.pair-none;
                             clicked => { Course.pair-with(""); }
                         }
                         if Course.pair-manual: DialogButton {
-                            text: "Back to automatic";
+                            text: "恢复自动配对";
                             icon: @image-url("icons/rotate-ccw.svg");
                             has-icon: true;
                             clicked => { Course.pair-reset(); }
@@ -1288,7 +1303,7 @@ export component CourseDialogs inherits Rectangle {
                             horizontal-stretch: 1;
                         }
                         DialogButton {
-                            text: "Cancel";
+                            text: "取消";
                             clicked => { Course.dialog = ""; }
                         }
                     }
@@ -1297,13 +1312,13 @@ export component CourseDialogs inherits Rectangle {
                 if Course.dialog == "delete": VerticalLayout {
                     spacing: 16px;
                     Text {
-                        text: "Remove from library?";
+                        text: "从课程库移除？";
                         color: Theme.on-surface;
                         font-size: Theme.headline-sm;
                         font-weight: 600;
                     }
                     Text {
-                        text: Course.title + " will be removed from Deskemy, along with its progress and bookmarks. Your video files on disk are not deleted — you can re-import the folder later.";
+                        text: Course.title + " 将从 Deskemy 中移除，其进度和书签也会一并删除。磁盘上的视频文件不会被删除 —— 之后仍可重新导入该文件夹。";
                         color: Theme.on-surface-variant;
                         font-size: Theme.body-sm;
                         wrap: word-wrap;
@@ -1313,7 +1328,7 @@ export component CourseDialogs inherits Rectangle {
                         max-width: root.text-width;
                     }
                     if Course.delete-error != "": Text {
-                        text: "Couldn't remove: " + Course.delete-error;
+                        text: "无法移除：" + Course.delete-error;
                         color: Theme.error;
                         font-size: Theme.label-sm;
                         wrap: word-wrap;
@@ -1323,12 +1338,12 @@ export component CourseDialogs inherits Rectangle {
                         alignment: end;
                         spacing: 8px;
                         DialogButton {
-                            text: "Cancel";
+                            text: "取消";
                             clicked => { Course.dialog = ""; }
                         }
                         DialogButton {
                             kind: "danger";
-                            text: "Remove";
+                            text: "移除";
                             icon: @image-url("icons/trash-2.svg");
                             has-icon: true;
                             clicked => { Course.delete-course(); }

@@ -95,14 +95,14 @@ pub fn stage_import(data_dir: &Path, src: &Path, current_schema: i64) -> Result<
     let manifest: Manifest = {
         let mut mf = archive
             .by_name(MANIFEST_NAME)
-            .map_err(|_| DeskemyError::Other("not a Deskemy backup (no manifest)".into()))?;
+            .map_err(|_| DeskemyError::Other("不是 Deskemy 备份（缺少清单文件）".into()))?;
         let mut s = String::new();
         mf.read_to_string(&mut s)?;
         serde_json::from_str(&s)?
     };
     if manifest.schema_version > current_schema {
         return Err(DeskemyError::Other(format!(
-            "this backup is from a newer version of Deskemy (data format v{}, this build supports v{}). Update Deskemy and try again.",
+            "该备份来自更新版本的 Deskemy（数据格式 v{}，当前版本支持 v{}）。请更新 Deskemy 后重试。",
             manifest.schema_version, current_schema
         )));
     }
@@ -139,7 +139,7 @@ pub fn stage_import(data_dir: &Path, src: &Path, current_schema: i64) -> Result<
     if !pending.join(DB_NAME).exists() {
         let _ = std::fs::remove_dir_all(&pending);
         return Err(DeskemyError::Other(
-            "backup archive is missing its database".into(),
+            "备份压缩包中缺少数据库文件".into(),
         ));
     }
     Ok(())

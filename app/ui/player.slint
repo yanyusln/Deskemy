@@ -412,7 +412,7 @@ component PromptRow inherits Rectangle {
         Rectangle {
             width: 16px;
             accessible-role: button;
-            accessible-label: root.item.done ? "Mark as not done" : "Mark as done";
+            accessible-label: root.item.done ? "标记为未完成" : "标记为已完成";
             Image {
                 source: root.item.done ? @image-url("icons/circle-check.svg") : @image-url("icons/circle.svg");
                 width: 16px;
@@ -440,7 +440,7 @@ component PromptRow inherits Rectangle {
             overflow: elide;
         }
         Text {
-            text: "Open";
+            text: "打开";
             color: #ffffffb3;
             font-size: 12px;
             font-weight: 600;
@@ -559,38 +559,38 @@ export component PlayerOverlay inherits Rectangle {
     /// The Tauri player's shortcut map.
     out property <[ShortcutGroup]> shortcuts: [
         {
-            title: "Playback",
+            title: "播放",
             items: [
-                { keys: "Space / K", action: "Play / pause" },
-                { keys: "J / L", action: "Back / forward 10s" },
-                { keys: "← / →", action: "Back / forward 5s" },
-                { keys: "↑ / ↓", action: "Volume up / down" },
-                { keys: "M", action: "Mute" },
-                { keys: "C", action: "Toggle subtitles" },
-                { keys: "< / >", action: "Speed down / up" },
-                { keys: "A", action: "Loop: start, end, off" },
-                { keys: "0 – 9", action: "Jump to 0–90%" },
-                { keys: "Home / End", action: "Start / end" },
+                { keys: "Space / K", action: "播放 / 暂停" },
+                { keys: "J / L", action: "后退 / 前进 10 秒" },
+                { keys: "← / →", action: "后退 / 前进 5 秒" },
+                { keys: "↑ / ↓", action: "音量加 / 减" },
+                { keys: "M", action: "静音" },
+                { keys: "C", action: "切换字幕" },
+                { keys: "< / >", action: "减速 / 加速" },
+                { keys: "A", action: "循环：开始、结束、关闭" },
+                { keys: "0 – 9", action: "跳转到 0–90%" },
+                { keys: "Home / End", action: "开头 / 结尾" },
             ],
         },
         {
-            title: "Navigation",
+            title: "导航",
             items: [
-                { keys: "N / ⇧N", action: "Next / previous lecture" },
-                { keys: "F", action: "Fullscreen" },
-                { keys: "T", action: "Mini player, on top" },
-                { keys: "Esc", action: "Exit / back" },
-                { keys: "Mouse back", action: "Leave the player" },
+                { keys: "N / ⇧N", action: "下一 / 上一课时" },
+                { keys: "F", action: "全屏" },
+                { keys: "T", action: "迷你播放器，置顶" },
+                { keys: "Esc", action: "退出 / 返回" },
+                { keys: "鼠标后退键", action: "离开播放器" },
             ],
         },
         {
-            title: "Panels",
+            title: "面板",
             items: [
-                { keys: "P", action: "Course content" },
-                { keys: "R", action: "Resources" },
-                { keys: "B", action: "Bookmark here" },
-                { keys: "I", action: "Playback info" },
-                { keys: "?", action: "This cheat sheet" },
+                { keys: "P", action: "课程内容" },
+                { keys: "R", action: "资源" },
+                { keys: "B", action: "在此添加书签" },
+                { keys: "I", action: "播放信息" },
+                { keys: "?", action: "本快捷键列表" },
             ],
         },
     ];
@@ -854,10 +854,10 @@ export component PlayerOverlay inherits Rectangle {
                         HorizontalLayout {
                             padding-left: 12px;
                             Text {
-                                text: Playback.open-menu == "speed" ? "Playback speed"
-                                    : Playback.open-menu == "sub" ? "Subtitles"
-                                    : Playback.open-menu == "audio" ? "Audio track"
-                                    : "Chapters";
+                                text: Playback.open-menu == "speed" ? "播放速度"
+                                    : Playback.open-menu == "sub" ? "字幕"
+                                    : Playback.open-menu == "audio" ? "音轨"
+                                    : "章节";
                                 color: #ffffff99;
                                 font-size: 12px;
                                 font-weight: 600;
@@ -885,7 +885,7 @@ export component PlayerOverlay inherits Rectangle {
                                 HorizontalLayout {
                                     padding-left: 12px;
                                     Text {
-                                        text: "Saved for this course";
+                                        text: "已为此课程保存";
                                         color: #ffffff99;
                                         font-size: 12px;
                                         height: 24px;
@@ -893,7 +893,7 @@ export component PlayerOverlay inherits Rectangle {
                                     }
                                 }
                                 MenuRow {
-                                    item: { id: -1, label: "Use default (" + Playback.speed-default + ")", detail: "", selected: false };
+                                    item: { id: -1, label: "使用默认（" + Playback.speed-default + "）", detail: "", selected: false };
                                     clicked => { Playback.use-default-speed(); }
                                 }
                             }
@@ -1011,7 +1011,7 @@ export component PlayerOverlay inherits Rectangle {
                                 padding-left: 8px;
                                 padding-right: 8px;
                                 Text {
-                                    text: "Up next";
+                                    text: "接下来";
                                     color: #ffffff99;
                                     font-size: 11px;
                                     horizontal-alignment: right;
@@ -1082,14 +1082,14 @@ export component PlayerOverlay inherits Rectangle {
                     if Playback.loop-a < 0: IconButton {
                         icon: @image-url("icons/m-repeat.svg");
                         accessible-role: button;
-                        accessible-label: "Loop a stretch (A)";
+                        accessible-label: "循环片段（A）";
                         clicked => { Playback.ab-loop(); }
                     }
                     if Playback.loop-a >= 0: Chip {
                         text: root.time(Playback.loop-a) + " – " + (Playback.loop-b >= 0 ? root.time(Playback.loop-b) : "…");
                         selected: false;
                         accessible-role: button;
-                        accessible-label: Playback.loop-b >= 0 ? "Turn the loop off (A)" : "End the loop here (A)";
+                        accessible-label: Playback.loop-b >= 0 ? "关闭循环（A）" : "在此结束循环（A）";
                         clicked => { Playback.ab-loop(); }
                     }
 
@@ -1165,7 +1165,7 @@ export component PlayerOverlay inherits Rectangle {
                                 colorize: #ffffff;
                             }
                             Text {
-                                text: "Sleep timer";
+                                text: "睡眠定时器";
                                 color: #ffffff;
                                 font-size: 16px;
                                 font-weight: 700;
@@ -1173,7 +1173,7 @@ export component PlayerOverlay inherits Rectangle {
                                 vertical-alignment: center;
                             }
                             if Playback.sleep-mode != "off": Text {
-                                text: "Turn off";
+                                text: "关闭";
                                 color: off-touch.has-hover ? #ffffff : #ffffffb3;
                                 font-size: 13px;
                                 vertical-alignment: center;
@@ -1185,12 +1185,12 @@ export component PlayerOverlay inherits Rectangle {
                         }
 
                         if Playback.sleep-mode == "minutes": Text {
-                            text: "Pausing in " + Playback.sleep-badge + ".";
+                            text: "将在 " + Playback.sleep-badge + " 后暂停。";
                             color: #ffffffb3;
                             font-size: 13px;
                         }
                         if Playback.sleep-mode == "lecture": Text {
-                            text: "Pausing at the end of this lecture.";
+                            text: "将在本课时结束后暂停。";
                             color: #ffffffb3;
                             font-size: 13px;
                         }
@@ -1199,7 +1199,7 @@ export component PlayerOverlay inherits Rectangle {
                             spacing: 8px;
                             for minutes in [15, 30, 45, 60]: Chip {
                                 horizontal-stretch: 1;
-                                text: minutes + "m";
+                                text: minutes + " 分钟";
                                 selected: Playback.sleep-mode == "minutes" && Playback.sleep-minutes == minutes;
                                 clicked => {
                                     Playback.sleep-for(minutes);
@@ -1237,14 +1237,14 @@ export component PlayerOverlay inherits Rectangle {
                                 if custom.text == "": Text {
                                     x: 10px;
                                     height: parent.height;
-                                    text: "Custom minutes";
+                                    text: "自定义分钟";
                                     color: #ffffff59;
                                     font-size: 13px;
                                     vertical-alignment: center;
                                 }
                             }
                             Chip {
-                                text: "Set";
+                                text: "设置";
                                 clicked => {
                                     if custom.text.to-float() >= 1 {
                                         Playback.sleep-for(floor(custom.text.to-float()));
@@ -1258,7 +1258,7 @@ export component PlayerOverlay inherits Rectangle {
                         MenuRow {
                             item: {
                                 id: 0,
-                                label: "End of lecture",
+                                label: "课时结束",
                                 detail: "",
                                 selected: Playback.sleep-mode == "lecture",
                             };
@@ -1309,7 +1309,7 @@ export component PlayerOverlay inherits Rectangle {
                                 colorize: #ffffff;
                             }
                             Text {
-                                text: "Add bookmark";
+                                text: "添加书签";
                                 color: #ffffff;
                                 font-size: 16px;
                                 font-weight: 700;
@@ -1345,7 +1345,7 @@ export component PlayerOverlay inherits Rectangle {
                             if label.text == "": Text {
                                 x: 10px;
                                 height: parent.height;
-                                text: "Label (optional)";
+                                text: "标签（可选）";
                                 color: #ffffff59;
                                 font-size: 13px;
                                 vertical-alignment: center;
@@ -1356,11 +1356,11 @@ export component PlayerOverlay inherits Rectangle {
                             alignment: end;
                             spacing: 8px;
                             Chip {
-                                text: "Cancel";
+                                text: "取消";
                                 clicked => { Playback.close-bookmark(); }
                             }
                             Chip {
-                                text: "Save";
+                                text: "保存";
                                 selected: true;
                                 clicked => { Playback.save-bookmark(label.text); }
                             }
@@ -1373,7 +1373,7 @@ export component PlayerOverlay inherits Rectangle {
                                 background: #ffffff14;
                             }
                             Text {
-                                text: "SAVED BOOKMARKS";
+                                text: "已保存的书签";
                                 color: #ffffff80;
                                 font-size: 11px;
                                 font-weight: 600;
@@ -1512,7 +1512,7 @@ export component PlayerOverlay inherits Rectangle {
                             colorize: #ffffff;
                         }
                         Text {
-                            text: "Keyboard shortcuts";
+                            text: "键盘快捷键";
                             color: #ffffff;
                             font-size: 16px;
                             font-weight: 700;
@@ -1589,8 +1589,8 @@ export component PlayerOverlay inherits Rectangle {
                         colorize: #ffffff;
                     }
                     Text {
-                        text: Playback.prompt-items.length == 1 ? "A resource for this lecture"
-                            : Playback.prompt-items.length + " resources for this lecture";
+                        text: Playback.prompt-items.length == 1 ? "本课时有 1 个资源"
+                            : "本课时有 " + Playback.prompt-items.length + " 个资源";
                         color: #ffffff;
                         font-size: 14px;
                         font-weight: 700;
@@ -1602,7 +1602,7 @@ export component PlayerOverlay inherits Rectangle {
                         icon: @image-url("icons/x.svg");
                         icon-size: 16px;
                         accessible-role: button;
-                        accessible-label: "Dismiss";
+                        accessible-label: "忽略";
                         clicked => { Playback.resources-soon = false; }
                     }
                 }
@@ -1648,7 +1648,7 @@ export component PlayerOverlay inherits Rectangle {
                             colorize: #ffffff;
                         }
                         Text {
-                            text: "Before the next lecture";
+                            text: "进入下一课时前";
                             color: #ffffff;
                             font-size: 16px;
                             font-weight: 700;
@@ -1657,9 +1657,9 @@ export component PlayerOverlay inherits Rectangle {
                     }
                     // max-width: wrapped text is measured at its one-line width.
                     Text {
-                        text: "\u{201C}" + Playback.title + "\u{201D} comes with "
-                            + (Playback.prompt-items.length == 1 ? "a resource" : Playback.prompt-items.length + " resources")
-                            + ". Open, then tick off, what you've worked through.";
+                        text: "\u{201C}" + Playback.title + "\u{201D} 附带 "
+                            + (Playback.prompt-items.length == 1 ? "1 个资源" : Playback.prompt-items.length + " 个资源")
+                            + "。打开并勾选你已经完成的内容。";
                         color: #ffffffb3;
                         font-size: 13px;
                         wrap: word-wrap;
@@ -1676,11 +1676,11 @@ export component PlayerOverlay inherits Rectangle {
                         alignment: end;
                         spacing: 8px;
                         Chip {
-                            text: "Stay here";
+                            text: "留在这里";
                             clicked => { Playback.open-menu = ""; }
                         }
                         Chip {
-                            text: "Next lecture";
+                            text: "下一课时";
                             selected: true;
                             clicked => {
                                 Playback.open-menu = "";
@@ -1699,9 +1699,9 @@ export component PlayerOverlay inherits Rectangle {
 /// lecture sits, with links back to the library and its course. The section
 /// tells apart lectures with the same name ("lecture" in every section).
 export component PlayerTopBar inherits TitleBar {
-    crumbs: Playback.course-id == "" ? ["Library", Playback.title]
-        : Playback.subtitle == "" ? ["Library", Playback.course-title, Playback.title]
-        : ["Library", Playback.course-title, Playback.subtitle, Playback.title];
+    crumbs: Playback.course-id == "" ? ["课程库", Playback.title]
+        : Playback.subtitle == "" ? ["课程库", Playback.course-title, Playback.title]
+        : ["课程库", Playback.course-title, Playback.subtitle, Playback.title];
     targets: Playback.course-id == "" ? ["library", ""] : ["library", "course", "", ""];
     back-button: true;
     back => { Playback.back(); }
@@ -1709,7 +1709,7 @@ export component PlayerTopBar inherits TitleBar {
         Playback.back();
         if i == 0 {
             Nav.page = "library";
-            Nav.crumbs = ["Library"];
+            Nav.crumbs = ["课程库"];
             Nav.crumb-targets = [""];
         } else {
             Library.show-course(Playback.course-id);

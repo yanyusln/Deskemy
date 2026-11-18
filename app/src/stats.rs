@@ -23,54 +23,54 @@ pub fn read(mpv: &Mpv) -> Groups {
 
     vec![
         (
-            "Video",
+            "视频",
             vec![
-                ("Codec", or_dash(text("current-tracks/video/codec").map(|c| codec_name(&c)))),
-                ("Resolution", or_dash(resolution)),
-                ("FPS", or_dash(num("container-fps").map(|f| format!("{f:.2}")))),
-                ("Bitrate", or_dash(num("video-bitrate").map(bitrate))),
-                ("Decoder", text("hwdec-current").unwrap_or_else(|| "software".into())),
+                ("编码", or_dash(text("current-tracks/video/codec").map(|c| codec_name(&c)))),
+                ("分辨率", or_dash(resolution)),
+                ("帧率", or_dash(num("container-fps").map(|f| format!("{f:.2}")))),
+                ("码率", or_dash(num("video-bitrate").map(bitrate))),
+                ("解码器", text("hwdec-current").unwrap_or_else(|| "软件".into())),
             ],
         ),
         (
-            "Audio",
+            "音频",
             vec![
-                ("Codec", or_dash(text("current-tracks/audio/codec").map(|c| codec_name(&c)))),
-                ("Sample rate", or_dash(num("audio-params/samplerate").map(|r| format!("{:.1} kHz", r / 1000.0)))),
-                ("Channels", or_dash(text("audio-params/channel-count"))),
-                ("Bitrate", or_dash(num("audio-bitrate").map(bitrate))),
+                ("编码", or_dash(text("current-tracks/audio/codec").map(|c| codec_name(&c)))),
+                ("采样率", or_dash(num("audio-params/samplerate").map(|r| format!("{:.1} kHz", r / 1000.0)))),
+                ("声道", or_dash(text("audio-params/channel-count"))),
+                ("码率", or_dash(num("audio-bitrate").map(bitrate))),
             ],
         ),
         (
-            "Color",
+            "色彩",
             vec![
-                ("Pixel format", or_dash(text("video-params/pixelformat"))),
-                ("HW format", or_dash(text("video-params/hw-pixelformat"))),
-                ("Matrix", or_dash(text("video-params/colormatrix"))),
-                ("Primaries", or_dash(text("video-params/primaries"))),
-                ("Transfer", or_dash(text("video-params/gamma"))),
+                ("像素格式", or_dash(text("video-params/pixelformat"))),
+                ("硬件格式", or_dash(text("video-params/hw-pixelformat"))),
+                ("矩阵", or_dash(text("video-params/colormatrix"))),
+                ("原色", or_dash(text("video-params/primaries"))),
+                ("传输特性", or_dash(text("video-params/gamma"))),
             ],
         ),
         (
-            "Performance",
+            "性能",
             vec![
-                ("Render FPS", or_dash(num("estimated-vf-fps").map(|f| format!("{f:.2}")))),
-                ("A/V sync", or_dash(num("avsync").map(milliseconds))),
-                ("Dropped", format!("{dropped}")),
+                ("渲染帧率", or_dash(num("estimated-vf-fps").map(|f| format!("{f:.2}")))),
+                ("音画同步", or_dash(num("avsync").map(milliseconds))),
+                ("丢帧", format!("{dropped}")),
             ],
         ),
         (
-            "Buffer",
+            "缓冲",
             vec![
-                ("Cached", or_dash(num("demuxer-cache-duration").map(|s| format!("{s:.1}s")))),
-                ("Speed", or_dash(num("cache-speed").map(|b| format!("{:.1} MB/s", b / 1_000_000.0)))),
+                ("已缓存", or_dash(num("demuxer-cache-duration").map(|s| format!("{s:.1}s")))),
+                ("速度", or_dash(num("cache-speed").map(|b| format!("{:.1} MB/s", b / 1_000_000.0)))),
             ],
         ),
         (
-            "App",
+            "应用",
             vec![
-                ("Player", or_dash(text("mpv-version"))),
-                ("Renderer", "Slint · OpenGL".into()),
+                ("播放器", or_dash(text("mpv-version"))),
+                ("渲染器", "Slint · OpenGL".into()),
             ],
         ),
     ]

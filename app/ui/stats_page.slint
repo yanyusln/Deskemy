@@ -281,7 +281,7 @@ export component StatsPage inherits Flickable {
                 colorize: Theme.on-surface;
             }
             Text {
-                text: "Stats";
+                text: "统计";
                 color: Theme.on-surface;
                 font-size: Theme.headline-sm;
                 font-weight: 600;
@@ -290,7 +290,7 @@ export component StatsPage inherits Flickable {
         }
 
         if LearningStats.error != "": Text {
-            text: "Couldn't load stats: " + LearningStats.error;
+            text: "无法加载统计数据：" + LearningStats.error;
             color: Theme.error;
             font-size: Theme.body-sm;
             horizontal-alignment: center;
@@ -301,7 +301,7 @@ export component StatsPage inherits Flickable {
         // Today: goal ring, streak, the course in focus.
         if LearningStats.error == "": VerticalLayout {
             spacing: 12px;
-            Heading { text: "TODAY"; }
+            Heading { text: "今天"; }
             HorizontalLayout {
                 spacing: root.gap;
                 height: 112px;
@@ -345,7 +345,7 @@ export component StatsPage inherits Flickable {
                             alignment: center;
                             spacing: 2px;
                             Text {
-                                text: "Daily goal";
+                                text: "每日目标";
                                 color: Theme.on-surface-variant;
                                 font-size: Theme.label-sm;
                             }
@@ -361,10 +361,10 @@ export component StatsPage inherits Flickable {
                 Figure {
                     width: root.third;
                     icon: @image-url("icons/flame.svg");
-                    label: "Current streak";
+                    label: "当前连续学习";
                     value: LearningStats.streak;
                     suffix: " " + LearningStats.streak-unit;
-                    note: "Best: " + LearningStats.best-streak + (LearningStats.best-streak == 1 ? " day" : " days");
+                    note: "最佳：" + LearningStats.best-streak + " 天";
                 }
                 Card {
                     width: root.third;
@@ -372,12 +372,12 @@ export component StatsPage inherits Flickable {
                         padding: 16px;
                         spacing: 4px;
                         Text {
-                            text: "Currently focused";
+                            text: "当前专注";
                             color: Theme.on-surface-variant;
                             font-size: Theme.label-sm;
                         }
                         if LearningStats.focus-id == "": Text {
-                            text: "Start a course to see it here.";
+                            text: "开始一门课程后会显示在这里。";
                             color: Theme.on-surface-variant;
                             font-size: Theme.body-sm;
                             vertical-alignment: center;
@@ -386,7 +386,7 @@ export component StatsPage inherits Flickable {
                         if LearningStats.focus-id != "": Rectangle {
                             vertical-stretch: 1;
                             accessible-role: button;
-                            accessible-label: "Continue " + LearningStats.focus-title;
+                            accessible-label: "继续 " + LearningStats.focus-title;
                             focus-touch := TouchArea {
                                 mouse-cursor: pointer;
                                 clicked => { Library.show-course(LearningStats.focus-id); }
@@ -394,13 +394,17 @@ export component StatsPage inherits Flickable {
                             VerticalLayout {
                                 alignment: center;
                                 spacing: 6px;
+                                // Two lines at most (2 x 16.8px at body-md).
+                                // `clip`, not `elide`: with wrap, elide misplaces
+                                // the whole block once the text is taller than
+                                // the box — the first line is cut off.
                                 Text {
                                     text: LearningStats.focus-title;
                                     color: focus-touch.has-hover ? Theme.primary : Theme.on-surface;
                                     font-size: Theme.body-md;
                                     wrap: word-wrap;
-                                    overflow: elide;
-                                    max-height: 40px;
+                                    overflow: clip;
+                                    height: 34px;
                                     // A long unbroken name (underscores, no spaces) breaks anywhere
                                     // instead of widening the layout past its card.
                                     min-width: 0px;
@@ -416,7 +420,7 @@ export component StatsPage inherits Flickable {
                                         colorize: Theme.primary;
                                     }
                                     Text {
-                                        text: "Continue · " + LearningStats.focus-percent + "%";
+                                        text: "继续 · " + LearningStats.focus-percent + "%";
                                         color: Theme.primary;
                                         font-size: Theme.label-md;
                                         font-weight: 600;
@@ -433,20 +437,20 @@ export component StatsPage inherits Flickable {
         // Learning overview.
         if LearningStats.error == "": VerticalLayout {
             spacing: 12px;
-            Heading { text: "LEARNING OVERVIEW"; }
+            Heading { text: "学习概览"; }
             HorizontalLayout {
                 spacing: root.gap;
                 Figure {
                     width: root.third;
                     icon: @image-url("icons/clock.svg");
-                    label: "Watch time";
+                    label: "观看时长";
                     value: LearningStats.watch-total;
-                    note: LearningStats.today-minutes + "m today";
+                    note: "今日 " + LearningStats.today-minutes + " 分钟";
                 }
                 Figure {
                     width: root.third;
                     icon: @image-url("icons/circle-check.svg");
-                    label: "Lectures completed";
+                    label: "已完成课时";
                     value: LearningStats.lectures-completed;
                     suffix: "/" + LearningStats.lectures-total;
                     note: LearningStats.lecture-percent + "%";
@@ -454,7 +458,7 @@ export component StatsPage inherits Flickable {
                 Figure {
                     width: root.third;
                     icon: @image-url("icons/graduation-cap.svg");
-                    label: "Completed courses";
+                    label: "已完成课程";
                     value: LearningStats.courses-completed;
                     suffix: "/" + LearningStats.courses-total;
                 }
@@ -466,7 +470,7 @@ export component StatsPage inherits Flickable {
                     spacing: 8px;
                     HorizontalLayout {
                         Text {
-                            text: "Overall learning progress";
+                            text: "总体学习进度";
                             color: Theme.on-surface;
                             font-size: Theme.body-md;
                             horizontal-stretch: 1;
@@ -490,7 +494,7 @@ export component StatsPage inherits Flickable {
                         }
                     }
                     Text {
-                        text: LearningStats.lectures-completed + " / " + LearningStats.lectures-total + " lectures completed";
+                        text: "已完成 " + LearningStats.lectures-completed + " / " + LearningStats.lectures-total + " 个课时";
                         color: Theme.on-surface-variant;
                         font-size: Theme.label-sm;
                     }
@@ -501,7 +505,7 @@ export component StatsPage inherits Flickable {
         // Activity: heatmap and this week.
         if LearningStats.error == "": VerticalLayout {
             spacing: 12px;
-            Heading { text: "ACTIVITY"; }
+            Heading { text: "活动"; }
             Card {
                 height: activity.preferred-height;
                 activity := VerticalLayout {
@@ -511,13 +515,13 @@ export component StatsPage inherits Flickable {
                         spacing: 8px;
                         HorizontalLayout {
                             Text {
-                                text: "Watch activity";
+                                text: "观看活动";
                                 color: Theme.on-surface;
                                 font-size: Theme.body-md;
                                 horizontal-stretch: 1;
                             }
                             Text {
-                                text: LearningStats.active-days-month + " active days this month";
+                                text: "本月活跃 " + LearningStats.active-days-month + " 天";
                                 color: Theme.on-surface-variant;
                                 font-size: Theme.label-sm;
                                 vertical-alignment: center;
@@ -533,7 +537,7 @@ export component StatsPage inherits Flickable {
                             spacing: 4px;
                             alignment: start;
                             Text {
-                                text: "Less";
+                                text: "少";
                                 color: Theme.on-surface-variant;
                                 font-size: Theme.label-sm;
                                 vertical-alignment: center;
@@ -546,7 +550,7 @@ export component StatsPage inherits Flickable {
                                 level: level;
                             }
                             Text {
-                                text: "More";
+                                text: "多";
                                 color: Theme.on-surface-variant;
                                 font-size: Theme.label-sm;
                                 vertical-alignment: center;
@@ -557,7 +561,7 @@ export component StatsPage inherits Flickable {
                         spacing: 8px;
                         HorizontalLayout {
                             Text {
-                                text: "This week";
+                                text: "本周";
                                 color: Theme.on-surface;
                                 font-size: Theme.body-md;
                                 horizontal-stretch: 1;
@@ -632,27 +636,27 @@ export component StatsPage inherits Flickable {
             VerticalLayout {
                 width: (root.page-width - 32px) / 2;
                 spacing: 12px;
-                Heading { text: "LIBRARY"; }
+                Heading { text: "课程库"; }
                 HorizontalLayout {
                     spacing: root.gap;
                     Tile {
                         width: root.tile;
                         value: LearningStats.in-progress;
-                        label: "In progress";
+                        label: "进行中";
                     }
                     Tile {
                         width: root.tile;
                         icon: @image-url("icons/bookmark.svg");
                         has-icon: true;
                         value: LearningStats.bookmarks;
-                        label: "Saved moments";
+                        label: "保存的书签";
                     }
                 }
             }
             VerticalLayout {
                 width: (root.page-width - 32px) / 2;
                 spacing: 12px;
-                Heading { text: "PERSONAL RECORDS"; }
+                Heading { text: "个人记录"; }
                 HorizontalLayout {
                     spacing: root.gap;
                     Tile {
@@ -660,14 +664,14 @@ export component StatsPage inherits Flickable {
                         icon: @image-url("icons/trophy.svg");
                         has-icon: true;
                         value: LearningStats.best-streak;
-                        label: "Best streak (days)";
+                        label: "最佳连续（天）";
                     }
                     Tile {
                         width: root.tile;
                         icon: @image-url("icons/trending-up.svg");
                         has-icon: true;
                         value: "+" + LearningStats.lectures-last-7;
-                        label: "Lectures (last 7 days)";
+                        label: "课时（近 7 天）";
                     }
                 }
             }

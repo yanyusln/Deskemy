@@ -110,7 +110,7 @@ export component SearchPage inherits Flickable {
                 colorize: Theme.on-surface;
             }
             Text {
-                text: "Search";
+                text: "搜索";
                 color: Theme.on-surface;
                 font-size: Theme.headline-sm;
                 font-weight: 600;
@@ -154,7 +154,7 @@ export component SearchPage inherits Flickable {
             if field.text == "": Text {
                 x: 40px;
                 height: parent.height;
-                text: "Search courses, sections, lectures…";
+                text: "搜索课程、章节、课时…";
                 color: Theme.on-surface-variant;
                 font-size: Theme.body-md;
                 vertical-alignment: center;
@@ -227,7 +227,7 @@ export component SearchPage inherits Flickable {
             if !group.all && group.rows.length > root.shown: HorizontalLayout {
                 alignment: start;
                 Text {
-                    text: "Show all " + group.rows.length;
+                    text: "显示全部 " + group.rows.length;
                     color: more-touch.has-hover ? Theme.on-surface : Theme.primary;
                     font-size: Theme.label-md;
                     font-weight: 600;
@@ -245,7 +245,7 @@ export component SearchPage inherits Flickable {
             spacing: 8px;
             GroupHeading {
                 icon: @image-url("icons/captions.svg");
-                text: "IN LECTURE SUBTITLES";
+                text: "课时字幕中";
             }
             Rectangle {
                 height: spoken.preferred-height;
@@ -313,7 +313,7 @@ export component SearchPage inherits Flickable {
         }
 
         if Search.searched && Search.groups.length == 0 && Search.subtitles.length == 0: Text {
-            text: "No matches for \"" + Search.query + "\".";
+            text: "未找到与“" + Search.query + "”匹配的内容。";
             color: Theme.on-surface-variant;
             font-size: Theme.body-sm;
             horizontal-alignment: center;
@@ -321,7 +321,7 @@ export component SearchPage inherits Flickable {
             vertical-alignment: center;
         }
         if Search.query == "": Text {
-            text: "Search across your library — titles, resources, and spoken subtitle text.";
+            text: "在课程库中搜索标题、资源，以及字幕中的对白内容。";
             color: Theme.on-surface-variant;
             font-size: Theme.body-sm;
             horizontal-alignment: center;
